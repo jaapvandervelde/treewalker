@@ -10,6 +10,8 @@ TODO: replace the text in this file with a text appropriate to your package.
 ```commandline
 git clone https://gitlab.com/bmt-aus/lib/python_package_template.git
 ```
+Or you can use PyCharm, from the start screen or the menu `Git - Clone...` to clone it into a new project directory.
+
 2. Run the [scripts/rename_package.py](scripts/rename_package.py) script, either directly or using the .bat or .sh provided to rename the package to your package name.
 ```commandline
 ./scripts/rename_package.sh my_package

@@ -9,7 +9,7 @@ __version__ = "unknown"
 try:
     version_line = open(version_fn, "rt").read()
 except EnvironmentError:
-    pass # no version file
+    pass  # no version file
 else:
     version_regex = r"^__version__ = ['\"]([^'\"]*)['\"]"
     m = re.search(version_regex, version_line, re.M)
@@ -33,8 +33,9 @@ setup(
     # long description will be the contents of project/README.md
     long_description=long_description,
     long_description_content_type='text/markdown',
-    # TODO: update author and email
+    # TODO: update author
     author='BMT Commercial Australia, <optional author(s)>',
+    # TODO: update email
     author_email='',
     # TODO: update Git repository URL
     url='',
