@@ -34,7 +34,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     # TODO: update author
-    author='BMT Commercial Australia, <optional author(s)>',
+    author='BMT Commercial Australia Pty Ltd, <optional author(s)>',
     # TODO: update email
     author_email='',
     # TODO: update Git repository URL
