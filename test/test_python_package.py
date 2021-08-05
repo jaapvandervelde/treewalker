@@ -12,6 +12,12 @@ class TestPythonPackage(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
+    def test_version_defined(self):
+        try:
+            from python_package import __version__
+        except ImportError:
+            self.fail('__version__ not in package')
+
     def test_greeting(self):
         self.assertEqual('Hello', greeting(), 'greeting is Hello')
 

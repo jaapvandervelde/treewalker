@@ -19,8 +19,8 @@ Or you can use PyCharm, from the start screen or the menu `Git - Clone...` to cl
 ```
 3. Create your own GitLab / GitHub project on the site and then update the remote:
 ```commandline
-git remote origin set-url https://gitlab.com/your_repo.git
-git remote push -u origin master
+git remote set-url origin https://gitlab.com/your_repo.git
+git push -u origin master
 ```
 4. Go through all of the TODO items in the project and update them to match your package's required settings.
 
