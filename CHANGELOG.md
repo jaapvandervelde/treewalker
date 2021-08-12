@@ -15,7 +15,7 @@ When each version is released:
 ## [0.0.1] - 2021-08-04
 
 ### Added
-  - Cloned and adapted from python_package_templated
+  - Cloned and adapted from python_package_template
 
 [Unreleased]: /../../../
 [0.0.1]: /../../../tags/0.0.1
