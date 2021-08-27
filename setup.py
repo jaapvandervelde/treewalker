@@ -16,8 +16,8 @@ else:
     if m:
         __version__ = m.group(1)
     else:
-        print(f'unable to find version in {version_fn}')
-        raise RuntimeError(f'If {version_fn} exists, it is required to be well-formed')
+        print('unable to find version in {}'.format(version_fn))
+        raise RuntimeError('If {} exists, it is required to be well-formed'.format(version_fn))
 
 with open("README.md", "r") as rm:
     long_description = rm.read()
@@ -41,7 +41,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.4',
     ],
     entry_points = {
         'console_scripts': ['treewalker=treewalker.treewalker:cli_entry_point'],

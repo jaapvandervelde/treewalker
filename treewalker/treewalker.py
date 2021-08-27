@@ -15,7 +15,8 @@ class TreeWalker:
     @classmethod
     def rewrite_path(cls, p, rewrite_admin=True):
         p = str(Path(p).resolve())
-        return rf'\\{cls.node}\{p[0].lower()}$\{p[2:]}' if rewrite_admin and len(p) > 1 and p[1] == ':' else p
+        return r'\\{}\{}$\{}'.format(cls.node, p[0].lower(), p[2:]) \
+            if rewrite_admin and len(p) > 1 and p[1] == ':' else p
 
     def __init__(self, fn, overwrite=True):
         self._conn = connect(fn)
@@ -44,7 +45,7 @@ class TreeWalker:
     def walk(self, path, parent_dir=-1, top_match='.*'):
         dir_id = self.next_dir_id
         self.next_dir_id += 1
-        self.log_1k(f'Processing {path}, {dir_id}')
+        self.log_1k('Processing {}, {}'.format(path, dir_id))
         total_size, min_mtime, min_atime, total_count, count, size = 0, 10000000000, 10000000000, 0, 0, 0
         try:
             for entry in scandir(path):
@@ -71,11 +72,11 @@ class TreeWalker:
                     min_mtime = min(min_mtime, mtime)
                     min_atime = min(min_atime, atime)
         except PermissionError:
-            print(f'Permission error trying to process: {path}')
+            print('Permission error trying to process: {}'.format(path))
             self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 0)',
                            [dir_id, parent_dir, path])
         except FileNotFoundError:
-            print(f'File not found error trying to process: {path}')
+            print('File not found error trying to process: {}'.format(path))
             self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 1)',
                            [dir_id, parent_dir, path])
 
@@ -214,9 +215,9 @@ def main():
             print_help()
             exit(1)
         if not Path(fn := cfg.merge).is_file():
-            error(f'File to merge not found: {fn}')
+            error('File to merge not found: {}'.format(fn))
             exit(2)
-        info(f'Merging "{cfg.merge}" into "{cfg.output}" (not processing further options)')
+        info('Merging "{}" into "{}" (not processing further options)'.format(cfg.merge, cfg.output))
         with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
             tree_walker.add_db(cfg.get('merge'))
         exit(0)
@@ -225,7 +226,7 @@ def main():
         print_help()
         exit(1)
 
-    info(f'Writing tree info for "{cfg.path}" to "{cfg.output}"')
+    info('Writing tree info for "{}" to "{}"'.format(cfg.path, cfg.output))
 
     with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
         if not isinstance(cfg.path, list):
