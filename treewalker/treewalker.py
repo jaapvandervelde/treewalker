@@ -218,12 +218,12 @@ def main():
                  'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
                  'rw': 'rewrite', 'ra': 'rewrite_admin', 't': 'top_match'})
 
-    if cfg.get('help', False):
+    if cfg.get_as_type('help', bool, False):
         print_help()
         exit(0)
 
-    overwrite = cfg.get('overwrite', False)
-    remove = cfg.get('remove', False)
+    overwrite = cfg.get_as_type('overwrite', bool, False)
+    remove = cfg.get_as_type('remove', bool, False)
 
     if 'path' not in cfg:
         if 'merge' not in cfg:
@@ -249,8 +249,8 @@ def main():
         if not isinstance(cfg.path, list):
             cfg.path = [cfg.path]
         for path in cfg.path:
-            if cfg.get('rewrite', True):
-                path = tree_walker.rewrite_path(path, cfg.get('rewrite_admin', True))
+            if cfg.get_as_type('rewrite', bool, True):
+                path = tree_walker.rewrite_path(path, cfg.get_as_type('rewrite_admin', bool, True))
             tree_walker.remove(path)
             # if not just removing
             if not remove:
