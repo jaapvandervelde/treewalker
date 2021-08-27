@@ -103,7 +103,7 @@ class TreeWalker:
             nonlocal ca
             ca.execute('SELECT * FROM dirs WHERE id = ?', [dir_id])
             self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
-                           [self.next_dir_id, parent_dir, *ca.fetchone()[2:]])
+                           (self.next_dir_id, parent_dir) + ca.fetchone()[2:])
             ca.execute('SELECT * FROM files WHERE parent_dir = ?', [dir_id])
             for f in ca.fetchall():
                 self.c.execute('INSERT INTO files VALUES(?, ?, ?, ?, ?)',
