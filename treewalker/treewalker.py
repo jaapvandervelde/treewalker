@@ -4,6 +4,7 @@ if version_info[0] == 3 and version_info[1] <= 4:
     from scandir import scandir
 else:
     from os import scandir
+from os import path
 from platform import node
 from sqlite3 import connect
 from logging import info, basicConfig, INFO, error
@@ -128,6 +129,11 @@ class TreeWalker:
         finally:
             conn_add.close()
 
+    @staticmethod
+    def _is_relative(p1, p2):
+        # instead of Path.is_relative_to, to ensure 3.4.4 compatibility
+        path.realpath(p1).startswith(path.realpath(p2))
+
     def remove(self, p):
         def do_remove(dir_id):
             self.c.execute('SELECT id FROM dirs WHERE parent_dir = ?', [dir_id])
@@ -139,9 +145,9 @@ class TreeWalker:
 
         self.c.execute('SELECT name, id FROM dirs WHERE parent_dir = -1')
         for r in self.c.fetchall():
-            if Path(r[0]).is_relative_to(p):
+            if self._is_relative(r[0], p):
                 do_remove(r[1])
-            elif Path(p).is_relative_to(r[0]):
+            elif self._is_relative(p, r[0]):
                 self.c.execute('SELECT id FROM dirs WHERE name = ?', [p])
                 _id = self.c.fetchone()[0]
                 if _id is None:
