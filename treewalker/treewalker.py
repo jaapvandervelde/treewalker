@@ -107,7 +107,7 @@ class TreeWalker:
             ca.execute('SELECT * FROM files WHERE parent_dir = ?', [dir_id])
             for f in ca.fetchall():
                 self.c.execute('INSERT INTO files VALUES(?, ?, ?, ?, ?)',
-                               [self.next_dir_id, *f[1:]])
+                               (self.next_dir_id,) + f[1:])
             ca.execute('SELECT id FROM dirs WHERE parent_dir = ?', [dir_id])
             new_dir_id = self.next_dir_id
             self.next_dir_id += 1
