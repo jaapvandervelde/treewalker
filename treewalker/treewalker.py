@@ -6,7 +6,7 @@ else:
     from os import scandir
 from os import path
 from platform import node
-from sqlite3 import connect
+from sqlite3 import connect, OperationalError
 from logging import info, basicConfig, INFO, error
 from pathlib import Path
 from conffu import Config
@@ -24,6 +24,7 @@ class TreeWalker:
             if rewrite_admin and len(p) > 1 and p[1] == ':' else p
 
     def __init__(self, fn, overwrite=True):
+        existed = Path(fn).is_file()
         self._conn = connect(fn)
         self.c = self._conn.cursor()
 
@@ -31,7 +32,7 @@ class TreeWalker:
         self.c.execute('DROP TABLE IF EXISTS no_access')
         self.c.execute('CREATE TABLE no_access (id int, parent_dir int, name text, problem int)')
 
-        if overwrite:
+        if overwrite or not existed:
             self.c.execute('DROP TABLE IF EXISTS dirs')
             self.c.execute('CREATE TABLE dirs (id int, parent_dir int, name text, size int, total_file_count int, '
                            'file_count int, min_mtime int, min_atime int)')
@@ -98,7 +99,11 @@ class TreeWalker:
         self.close()
 
     def commit(self):
-        self.c.execute('COMMIT')
+        try:
+            self.c.execute('COMMIT')
+        except OperationalError as e:
+            if not str(e).endswith('no transaction is active'):
+                raise e
 
     def close(self):
         self._conn.close()
