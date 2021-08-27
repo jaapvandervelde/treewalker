@@ -35,7 +35,8 @@ class TreeWalker:
             self.next_dir_id = 0
         else:
             self.c.execute('SELECT MAX(id) FROM dirs')
-            self.next_dir_id = 0 if (x := self.c.fetchone()[0]) is None else x
+            x = self.c.fetchone()[0]
+            self.next_dir_id = 0 if x is None else x
 
     def log_1k(self, *args):
         if self.lines % 1000 == 0:
@@ -214,7 +215,8 @@ def main():
             error('Provide "path" or "merge" in configuration file, or on the command line as "--path <some folder>"')
             print_help()
             exit(1)
-        if not Path(fn := cfg.merge).is_file():
+        fn = cfg.merge
+        if not Path(fn).is_file():
             error('File to merge not found: {}'.format(fn))
             exit(2)
         info('Merging "{}" into "{}" (not processing further options)'.format(cfg.merge, cfg.output))
