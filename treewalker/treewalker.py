@@ -1,5 +1,9 @@
 from re import match
-from os import scandir
+from sys import version_info
+if version_info[0] == 3 and version_info[1] <= 4:
+    from scandir import scandir
+else:
+    from os import scandir
 from platform import node
 from sqlite3 import connect
 from logging import info, basicConfig, INFO, error
