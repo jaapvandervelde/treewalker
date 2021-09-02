@@ -36,14 +36,14 @@ setup(
     url='https://gitlab.com/bmt-aus/tool/treewalker.git',
     # TODO: update keywords
     keywords=['system', 'tool', 'database'],
-    install_requires=['conffu>=2.2.10', 'scandir'],
+    install_requires=['conffu==2.2.13', 'scandir', 'typing'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.4',
     ],
-    entry_points = {
+    entry_points={
         'console_scripts': ['treewalker=treewalker.treewalker:cli_entry_point'],
     }
 )

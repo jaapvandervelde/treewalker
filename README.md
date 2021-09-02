@@ -4,6 +4,18 @@ A simple package to walk a directory tree and collect files and sizes into a SQL
 
 ## Usage
 
+For simple use cases, simply install the package from PyPI:
+```commandline
+pip install treewalker
+```
+And run it from the command line:
+```commandline
+treewalker --help
+treewalker --output test.sqlite --path C:/temp
+```
+
+## Usage and development
+
 Get started (change directory to where you want the project first):
 ```commandline
 pip install treewalker
@@ -26,11 +38,11 @@ Or run the script entirely from the command line:
 python walker.py --output test.sqlite --path c:\temp
 ```
 
-Or build a single file executable if you need this to run on Windows systems that won't have Python installed:
+Or build a single file executable if you need this to run on Windows systems that won't have Python pre-installed:
 ```commandline
 scripts/build_pyinstaller.bat c:/target/folder
 ```
-This creates a `treewalker.exe`, which can be run anywhere:
+This creates a `treewalker.exe`, which can be run 'anywhere':
 ```commandline
 .\treewalker.exe --output test.sqlite --path c:\temp
 ```

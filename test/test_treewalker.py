@@ -43,4 +43,3 @@ class TestWalker(unittest.TestCase):
         self.w.commit()
         self.w.remove('data\\dir\\sub')
         self.assertEqual({'test.txt': None}, self.w.get_tree('data\\dir'))
-

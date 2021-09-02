@@ -4,7 +4,7 @@ if version_info[0] == 3 and version_info[1] <= 4:
     from scandir import scandir
 else:
     from os import scandir
-from os import path
+from os import path as os_path, sep
 from platform import node
 from sqlite3 import connect, OperationalError
 from logging import info, basicConfig, INFO, error
@@ -26,6 +26,7 @@ class TreeWalker:
     def __init__(self, fn, overwrite=True):
         existed = Path(fn).is_file()
         self._conn = connect(fn)
+        self._conn.execute("PRAGMA foreign_keys = 1")
         self.c = self._conn.cursor()
 
         # always drop no_access, will only ever contain data about last run
@@ -42,7 +43,7 @@ class TreeWalker:
         else:
             self.c.execute('SELECT MAX(id) FROM dirs')
             x = self.c.fetchone()[0]
-            self.next_dir_id = 0 if x is None else x
+            self.next_dir_id = 0 if x is None else x + 1
 
     def log_1k(self, *args):
         if self.lines % 1000 == 0:
@@ -110,6 +111,7 @@ class TreeWalker:
 
     def add_db(self, fn):
         def do_add(dir_id, parent_dir):
+            print(dir_id)
             nonlocal ca
             ca.execute('SELECT * FROM dirs WHERE id = ?', [dir_id])
             self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
@@ -137,7 +139,8 @@ class TreeWalker:
     @staticmethod
     def _is_relative(p1, p2):
         # instead of Path.is_relative_to, to ensure 3.4.4 compatibility
-        path.realpath(p1).startswith(path.realpath(p2))
+        rp1, rp2 = os_path.realpath(p1), os_path.realpath(p2)
+        return rp1.startswith(rp2) and (len(rp1) == len(rp2) or rp1[len(rp2)] == sep)
 
     def remove(self, p):
         def do_remove(dir_id):
@@ -213,10 +216,10 @@ def print_help():
 def main():
     basicConfig(level=INFO)
 
-    cfg = Config.from_file(require_file=False).update_from_arguments(
-        aliases={'o': 'output', 'p': 'path', 'm': 'merge',
-                 'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
-                 'rw': 'rewrite', 'ra': 'rewrite_admin', 't': 'top_match'})
+    cfg = Config.startup(aliases={
+        'o': 'output', 'p': 'path', 'm': 'merge',
+        'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
+        'rw': 'rewrite', 'ra': 'rewrite_admin', 't': 'top_match'})
 
     if cfg.get_as_type('help', bool, False):
         print_help()
