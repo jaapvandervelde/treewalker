@@ -4,7 +4,7 @@
 
 No pending changes for unreleased versions.
 
-## [0.0.7] - 2021-09-06
+## [0.0.8] - 2021-09-06
 
 ### Added
   - list functions allowing quick retrieval of file and directory lists from the database
@@ -15,7 +15,8 @@ No pending changes for unreleased versions.
   - (BREAKING) overwriting the database is no longer the default for neither the class nor the CLI entrypoint  
   - integrated options into the database and checking options when reopening a database
   - replaced Python logic with SQLite logic where possible (for much greater performance)
-  - `path` option renamed `walk` and paths passed as a default are processed as part of `walk` 
+  - `path` option renamed `walk` and paths passed as a default are processed as part of `walk`
+  - `no_access` gets cleaned up on remove and correctly merged and re-indexed
 
 ## Fixed
   - correctly deal with no commands on command-line for CLI entry point
@@ -38,6 +39,6 @@ No pending changes for unreleased versions.
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
-[0.0.7]: /../../../tags/0.0.7
+[0.0.8]: /../../../tags/0.0.8
 [0.0.2]: /../../../tags/0.0.2
 [0.0.1]: /../../../tags/0.0.1

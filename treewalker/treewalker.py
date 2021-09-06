@@ -208,7 +208,7 @@ class TreeWalker:
         data = connection.execute('SELECT * FROM old_dirs')
         for row in data:
             cursor.execute('INSERT INTO dirs VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                           [mapping[row[0]], mapping[row[1]]] + row[2:])
+                           [mapping[row[0]], mapping[row[1]]] + list(row[2:]))
         cursor.execute('DROP TABLE old_dirs')
 
         cursor.execute('ALTER TABLE files RENAME TO old_files')
@@ -217,7 +217,7 @@ class TreeWalker:
         data = connection.execute('SELECT * FROM old_files')
         for row in data:
             cursor.execute('INSERT INTO files VALUES (?, ?, ?, ?, ?)',
-                           [mapping[row[0]]] + row[1:])
+                           [mapping[row[0]]] + list(row[1:]))
         cursor.execute('DROP TABLE old_files')
 
         cursor.execute('ALTER TABLE no_access RENAME TO old_no_access')
@@ -226,7 +226,7 @@ class TreeWalker:
         data = connection.execute('SELECT * FROM old_no_access')
         for row in data:
             cursor.execute('INSERT INTO no_access VALUES (?, ?, ?, ?)',
-                           [mapping[row[0]], mapping[row[1]]] + row[2:])
+                           [mapping[row[0]], mapping[row[1]]] + list(row[2:]))
         cursor.execute('DROP TABLE old_no_access')
         cursor.execute('COMMIT')
 
@@ -250,22 +250,18 @@ class TreeWalker:
 
     def remove(self, p):
         def do_remove(dir_id):
-            self.c.execute('DELETE FROM files '
-                           'WHERE parent_dir IN ('
-                           '  WITH RECURSIVE children(dir) AS ('
-                           '    SELECT ? '
-                           '    UNION ALL '
-                           '    SELECT dirs.id FROM dirs, children WHERE dirs.parent_dir = children.dir'
-                           '  ) '
-                           'SELECT dir FROM children)', [dir_id])
-            self.c.execute('DELETE FROM dirs '
-                           'WHERE id IN ('
-                           '  WITH RECURSIVE children(dir) AS ('
-                           '    SELECT ? '
-                           '    UNION ALL '
-                           '    SELECT dirs.id FROM dirs, children WHERE dirs.parent_dir = children.dir'
-                           '  ) '
-                           'SELECT dir FROM children)', [dir_id])
+            def _query(table, key):
+                self.c.execute('DELETE FROM {} '
+                               'WHERE {} IN ('
+                               '  WITH RECURSIVE children(dir) AS ('
+                               '    SELECT ? '
+                               '    UNION ALL '
+                               '    SELECT dirs.id FROM dirs, children WHERE dirs.parent_dir = children.dir'
+                               '  ) '
+                               'SELECT dir FROM children)'.format(table, key), [dir_id])
+            _query('no_access', 'parent_dir')
+            _query('files', 'parent_dir')
+            _query('dirs', 'id')
 
         if self.rewrite:
             p = self.rewrite_path(p)
