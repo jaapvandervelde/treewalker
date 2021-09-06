@@ -376,7 +376,7 @@ def main():
 
     overwrite = cfg.get_as_type('overwrite', bool, False)
 
-    if cfg.merge is not None:
+    if cfg.merge:
         fns = cfg.merge
         if not isinstance(fns, list):
             fns = [fns]
