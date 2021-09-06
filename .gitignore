@@ -6,6 +6,7 @@
 
 # default output location for examples
 output/
+sandbox/
 
 # Python compiled intermediate files (bytecode / binaries)
 __pycache__/

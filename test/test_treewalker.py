@@ -1,14 +1,17 @@
+from os import chdir
 from treewalker import TreeWalker
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import unittest
+
+chdir(Path(__file__).parent)
 
 
 # TODO replace the simple class below with actual tests for your code in treewalker
 class TestWalker(unittest.TestCase):
     def setUp(self) -> None:
         self.t = TemporaryDirectory()
-        self.w = TreeWalker(Path(self.t.name) / 'test_walker.sqlite')
+        self.w = TreeWalker(Path(self.t.name) / 'test_walker.sqlite', rewrite=False)
 
     def tearDown(self) -> None:
         self.w.close()
@@ -26,7 +29,7 @@ class TestWalker(unittest.TestCase):
         self.assertEqual({'sub': {'test.txt': None}, 'test.txt': None}, self.w.get_tree('data\\dir'))
 
     def test_db_add(self):
-        with TreeWalker(Path(self.t.name) / 'test_walker_two.sqlite') as w:
+        with TreeWalker(Path(self.t.name) / 'test_walker_two.sqlite', rewrite=False) as w:
             w.walk('data\\dir_two')
 
         self.w.walk('data\\dir')
