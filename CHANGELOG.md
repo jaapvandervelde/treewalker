@@ -4,7 +4,7 @@
 
 No pending changes for unreleased versions.
 
-## [0.0.4] - 2021-09-06
+## [0.0.5] - 2021-09-06
 
 ### Added
   - list functions allowing quick retrieval of file and directory lists from the database
@@ -13,6 +13,7 @@ No pending changes for unreleased versions.
   - (BREAKING) removed `top_match` option, now providing callback for cases where filtering is required
   - integrated options into the database and checking options when reopening a database
   - replaced Python logic with SQLite logic where possible (for much greater performance)
+  - `path` option renamed `walk` and paths passed as a default are processed as part of `walk` 
 
 ## Fixed
   - correctly deal with no commands on command-line for CLI entry point

@@ -101,7 +101,7 @@ class TreeWalker:
                     # noinspection PyUnresolvedReferences
                     if entry.is_dir(follow_symlinks=False):
                         # noinspection PyUnresolvedReferences
-                        size, sub_count, mtime, atime = self.walk(entry.path, dir_id)
+                        size, sub_count, mtime, atime = self._do_walk(entry.path, dir_id)
                         total_count += sub_count
                     else:
                         # noinspection PyUnresolvedReferences
@@ -332,12 +332,12 @@ def print_help():
     print(
         'Treewalker traverses a directory tree from a starting path, adding files and folders to a SQLite3 database.\n'
         '\n'
-        'Usage: `treewalker [options] --output filename --path path(s) | --merge filename\n'
+        'Usage: `treewalker [options] --output filename --walk path(s) | --merge filename\n'
         '\n'
         'Options:\n'
         '-h/--help                     : This text.\n'
         '-o/--output filename          : Filename for the SQLite3 database to write to. (required)\n'
-        '-p/--path path [path [..]]    : Path(s) to `walk` and add to the database.\n'
+        '-w/--walk path [path [..]]    : Path(s) to `walk` and add to the database.\n'
         '-m/--merge filename           : Filename of a 2nd database to merge into output.\n'
         '-rm/--remove path [path [..]] : Path(s) to recursively remove from the database.\n'
         '                                (--path, --merge or --remove required)\n'
@@ -348,7 +348,7 @@ def print_help():
         'Examples:\n'
         '\n'
         'Create a new database with the structure and contents of two temp directories:\n'
-        '   treewalker --overwrite --output temp_files.sqlite --path c:/temp d:/temp e:/temp\n'
+        '   treewalker --overwrite --output temp_files.sqlite --walk c:/temp d:/temp e:/temp\n'
         'Remove a subset of files already in a database:\n'
         '   treewalker --remove d:/temp/secret --output temp_files.sqlite\n'
         'Add previously generated files to the database:\n'
@@ -362,7 +362,7 @@ def main():
     basicConfig(level=INFO)
 
     cfg = Config.startup(
-        defaults={'merge': [], 'overwrite': False, 'remove': [],
+        defaults={'merge': [], 'overwrite': False, 'remove': [], 'walk': [],
                   'rewrite': True, 'rewrite_admin': True},
         aliases={'o': 'output', 'w': 'walk', 'm': 'merge',
                  'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
@@ -401,15 +401,20 @@ def main():
             tree_walker.reindex()
         exit(0)
 
+    if cfg['walk']:
+        if not isinstance(cfg.walk, list):
+            cfg.walk = [cfg.walk]
+    else:
+        cfg['walk'] = []
+    if isinstance(cfg.output, list):
+        cfg.walk.extend(cfg.output[1:])
+        cfg.output = cfg.output[0]
+
     with TreeWalker(cfg.output, overwrite=overwrite,
                     rewrite=cfg.get_as_type('rewrite', bool, True),
                     rewrite_admin=cfg.get_as_type('rewrite_admin', bool, True)) as tree_walker:
-        if cfg['walk']:
-            if not isinstance(cfg.walk, list):
-                cfg.walk = [cfg.walk]
-        else:
-            cfg['walk'] = []
         paths = cfg.walk + cfg.arguments[''][2:]
+
         for path in paths:
             tree_walker.update(path)
 

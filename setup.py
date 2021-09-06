@@ -36,7 +36,7 @@ setup(
     url='https://gitlab.com/bmt-aus/tool/treewalker.git',
     # TODO: update keywords
     keywords=['system', 'tool', 'database'],
-    install_requires=['conffu==2.2.15', 'scandir', 'typing'],
+    install_requires=['conffu==2.2.16', 'scandir', 'typing'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
