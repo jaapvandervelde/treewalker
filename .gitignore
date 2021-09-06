@@ -25,3 +25,5 @@ env/
 venv/
 .env/
 .venv/
+
+treewalker.spec
