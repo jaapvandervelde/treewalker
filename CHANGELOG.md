@@ -4,10 +4,11 @@
 
 No pending changes for unreleased versions.
 
-## [0.0.6] - 2021-09-06
+## [0.0.7] - 2021-09-06
 
 ### Added
   - list functions allowing quick retrieval of file and directory lists from the database
+  - installer build script specific to XP, tested to work with Python 3.4.4, Pyinstaller 3.0, PyPIwin32 219 and Conffu 2.2.16 
 
 ### Changed
   - (BREAKING) removed `top_match` option, now providing callback for cases where filtering is required
@@ -18,6 +19,7 @@ No pending changes for unreleased versions.
 
 ## Fixed
   - correctly deal with no commands on command-line for CLI entry point
+  - replaced Python 3.4.4 / PyInstaller 3.0 incompatible starred expressed, for XP compatibility
 
 ## [0.0.2] - 2021-09-02
 
@@ -36,6 +38,6 @@ No pending changes for unreleased versions.
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
-[0.0.6]: /../../../tags/0.0.6
+[0.0.7]: /../../../tags/0.0.7
 [0.0.2]: /../../../tags/0.0.2
 [0.0.1]: /../../../tags/0.0.1

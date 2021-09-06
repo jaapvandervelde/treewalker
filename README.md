@@ -41,6 +41,8 @@ python walker.py --output test.sqlite --path c:\temp
 Or build a single file executable if you need this to run on Windows systems that won't have Python pre-installed:
 ```commandline
 scripts/build_pyinstaller.bat c:/target/folder
+scripts/build_pyinstaller_xp.bat c:/target/folder
+
 ```
 This creates a `treewalker.exe`, which can be run 'anywhere':
 ```commandline

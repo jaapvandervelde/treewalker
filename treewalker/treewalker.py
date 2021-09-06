@@ -208,7 +208,7 @@ class TreeWalker:
         data = connection.execute('SELECT * FROM old_dirs')
         for row in data:
             cursor.execute('INSERT INTO dirs VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                           [mapping[row[0]], mapping[row[1]], *row[2:]])
+                           [mapping[row[0]], mapping[row[1]]] + row[2:])
         cursor.execute('DROP TABLE old_dirs')
 
         cursor.execute('ALTER TABLE files RENAME TO old_files')
@@ -217,7 +217,7 @@ class TreeWalker:
         data = connection.execute('SELECT * FROM old_files')
         for row in data:
             cursor.execute('INSERT INTO files VALUES (?, ?, ?, ?, ?)',
-                           [mapping[row[0]], *row[1:]])
+                           [mapping[row[0]]] + row[1:])
         cursor.execute('DROP TABLE old_files')
 
         cursor.execute('ALTER TABLE no_access RENAME TO old_no_access')
@@ -226,7 +226,7 @@ class TreeWalker:
         data = connection.execute('SELECT * FROM old_no_access')
         for row in data:
             cursor.execute('INSERT INTO no_access VALUES (?, ?, ?, ?)',
-                           [mapping[row[0]], mapping[row[1]], *row[2:]])
+                           [mapping[row[0]], mapping[row[1]]] + row[2:])
         cursor.execute('DROP TABLE old_no_access')
         cursor.execute('COMMIT')
 
