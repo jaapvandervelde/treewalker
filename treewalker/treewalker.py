@@ -26,7 +26,7 @@ class TreeWalker:
         return r'\\{}\{}${}'.format(self.node, p[0].lower(), p[2:]) \
             if self.rewrite_admin and len(p) > 1 and p[1] == ':' else p
 
-    def __init__(self, fn, overwrite=True, rewrite=True, rewrite_admin=True, override=False):
+    def __init__(self, fn, overwrite=False, rewrite=True, rewrite_admin=True, override=False):
         existed = Path(fn).is_file()
         if existed and overwrite:
             remove(fn)
