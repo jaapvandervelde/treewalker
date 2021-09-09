@@ -50,3 +50,18 @@ This creates a `treewalker.exe`, which can be run 'anywhere':
 ```
 
 Note that the executable will be limited to running on systems that support the version of Python you're using to build it. I.e. for Windows XP (32-bit or 64-bit), the very latest version of Python you can use is 3.4.4.
+
+## Getting at the data
+
+You can easily access the contents of any of the sqlite files:
+```python
+from sqlite3 import connect
+
+conn = connect('test.sqlite')
+c = conn.cursor()
+# show all the root directories
+print(c.execute('SELECT * FROM dirs WHERE parent_dir<0').fetchall())
+# show all files that have "test" in their name (case-insensitive)
+print(c.execute('SELECT * FROM files WHERE name LIKE "%test%"').fetchall())
+```
+Look at the documentation of the Python standard sqlite3 library for more examples. https://docs.python.org/3/library/sqlite3.html
