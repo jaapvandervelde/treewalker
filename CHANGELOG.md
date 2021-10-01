@@ -4,6 +4,16 @@
 
 No pending changes for unreleased versions.
 
+## [0.0.9] - 2021-10-01
+
+### Added
+  - set_host function, to update information gathered without administrative shares with host information
+```commandline
+treewalker --set_host myhostname --output existing.sqlite
+```
+# Fixed
+  - documentation errors
+
 ## [0.0.8] - 2021-09-06
 
 ### Added
@@ -39,6 +49,7 @@ No pending changes for unreleased versions.
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.0.9]: /../../../tags/0.0.9
 [0.0.8]: /../../../tags/0.0.8
 [0.0.2]: /../../../tags/0.0.2
 [0.0.1]: /../../../tags/0.0.1

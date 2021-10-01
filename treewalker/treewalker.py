@@ -285,6 +285,11 @@ class TreeWalker:
             self.remove(p)
         self._do_walk(p)
 
+    def set_host(self, hostname):
+        self.c.execute(
+            r'UPDATE dirs SET name = "\\" || ? || "\" || SUBSTR(name, 1, 1) || "$\" || SUBSTR(name, 4) '
+            r'WHERE name LIKE "_:\%"', [hostname])
+
     def get_tree(self, p=None, d=None):
         if d is None:
             if p is None:
@@ -326,25 +331,31 @@ def cli_entry_point():
 
 def print_help():
     print(
-        'Treewalker traverses a directory tree from a starting path, adding files and folders to a SQLite3 database.\n'
+        '\nTreewalker traverses a directory tree from a starting path, adding files and\n'
+        'folders to a SQLite3 database.\n'
         '\n'
-        'Usage: `treewalker [options] --output filename --walk path(s) | --merge filename\n'
+        'Use: `treewalker [options] --output filename --walk path(s) | --merge filename\n'
         '\n'
         'Options:\n'
         '-h/--help                     : This text.\n'
-        '-o/--output filename          : Filename for the SQLite3 database to write to. (required)\n'
+        '-o/--output filename          : SQLite3 database to write to. (required)\n'
         '-w/--walk path [path [..]]    : Path(s) to `walk` and add to the database.\n'
-        '-m/--merge filename           : Filename of a 2nd database to merge into output.\n'
-        '-rm/--remove path [path [..]] : Path(s) to recursively remove from the database.\n'
-        '                                (--path, --merge or --remove required)\n'
-        '-ow/--overwrite               : Overwrite (wipe) the output database (or to add to it). (default False)\n'
-        '-rw/--rewrite                 : Rewrite paths to resolved paths. (default True, set to False or 0 to change)\n'
-        '-ra/--rewrite_admin           : Rewrite local drive letters to administrative shares. (default True)\n'
+        '-m/--merge filename           : Filename of 2nd database to merge into output.\n'
+        '-rm/--remove path [path [..]] : Path(s) to recursively remove from database.\n'
+        '-ow/--overwrite               : Overwrite (wipe) the output database (or to\n'
+        '                                add to it). (default False)\n'
+        '-rw/--rewrite                 : Rewrite paths to resolved paths. (default True,\n'
+        '                                set to False or 0 to change)\n'
+        '-ra/--rewrite_admin           : Rewrite local drive letters to administrative\n'
+        '                                shares. (default True)\n'
+        '-sh/--set_host hostname       : Set all records with local drive letters to\n'
+        '                                administrative shares for hostname\n'
+        '                                (--walk/--merge/--remove/--set_host required)\n'
         '\n'
         'Examples:\n'
         '\n'
         'Create a new database with the structure and contents of two temp directories:\n'
-        '   treewalker --overwrite --output temp_files.sqlite --walk c:/temp d:/temp e:/temp\n'
+        '   treewalker --overwrite --output temp.sqlite --walk c:/temp d:/temp e:/temp\n'
         'Remove a subset of files already in a database:\n'
         '   treewalker --remove d:/temp/secret --output temp_files.sqlite\n'
         'Add previously generated files to the database:\n'
@@ -362,7 +373,7 @@ def main():
                   'rewrite': True, 'rewrite_admin': True},
         aliases={'o': 'output', 'w': 'walk', 'm': 'merge',
                  'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
-                 'rw': 'rewrite', 'ra': 'rewrite_admin'},
+                 'rw': 'rewrite', 'ra': 'rewrite_admin', 'sh': 'set_host'},
         no_key_error=True
     )
 
@@ -371,6 +382,11 @@ def main():
         exit(0)
 
     overwrite = cfg.get_as_type('overwrite', bool, False)
+
+    if 'output' not in cfg:
+        error('Provide "output" in configuration file, or on the command line as "--output <some filename>"')
+        print_help()
+        exit(1)
 
     if cfg.merge:
         fns = cfg.merge
@@ -381,15 +397,17 @@ def main():
                 error('File to merge not found: {}'.format(fn))
                 exit(2)
         for fn in fns:
+            if cfg.set_host is not None:
+                with TreeWalker(fn, overwrite=False) as tree_walker:
+                    tree_walker.set_host(cfg.set_host)
             info('Merging "{}" into "{}" (not processing further options)'.format(fn, cfg.output))
             with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
                 tree_walker.merge(fn)
         exit(0)
 
-    if 'output' not in cfg:
-        error('Provide "output" in configuration file, or on the command line as "--output <some filename>"')
-        print_help()
-        exit(1)
+    if cfg['set_host']:
+        with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
+            tree_walker.set_host(cfg.set_host)
 
     if cfg['reindex']:
         print('Reindexing {}...'.format(cfg.output))
