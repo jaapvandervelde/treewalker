@@ -4,6 +4,11 @@
 
 No pending changes for unreleased versions.
 
+## [0.0.10] - 2021-10-02
+
+# Fixed
+  - uncaught PermissionError edge cases.
+
 ## [0.0.9] - 2021-10-01
 
 ### Added
@@ -49,6 +54,7 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.0.10]: /../../../tags/0.0.10
 [0.0.9]: /../../../tags/0.0.9
 [0.0.8]: /../../../tags/0.0.8
 [0.0.2]: /../../../tags/0.0.2

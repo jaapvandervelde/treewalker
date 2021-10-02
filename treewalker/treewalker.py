@@ -279,11 +279,15 @@ class TreeWalker:
                 do_remove(_id)
 
     def update(self, p, remove_old=True):
-        if self.rewrite:
-            p = self.rewrite_path(p)
-        if remove_old:
-            self.remove(p)
-        self._do_walk(p)
+        try:
+            if self.rewrite:
+                p = self.rewrite_path(p)
+            if remove_old:
+                self.remove(p)
+            self._do_walk(p)
+        except PermissionError:
+            print('Permission error trying to prepare processing of: {}'.format(p))
+            self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 0)', [-1, -1, p])
 
     def set_host(self, hostname):
         self.c.execute(
