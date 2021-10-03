@@ -1,8 +1,7 @@
 import os
-from re import match
+from datetime import datetime
 from sys import version_info
 from os import remove
-
 if version_info[0] == 3 and version_info[1] <= 4:
     from scandir import scandir
 else:
@@ -13,6 +12,8 @@ from sqlite3 import connect, OperationalError, Row
 from logging import info, basicConfig, INFO, error, warning
 from pathlib import Path
 from conffu import Config
+
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 
 # noinspection SqlResolve
@@ -25,6 +26,13 @@ class TreeWalker:
         p = str(Path(p).resolve())
         return r'\\{}\{}${}'.format(self.node, p[0].lower(), p[2:]) \
             if self.rewrite_admin and len(p) > 1 and p[1] == ':' else p
+
+    @staticmethod
+    def _add_runs(conn, fn):
+        conn.execute('CREATE TABLE runs (root text, start text, end text)')
+        dt = datetime.strftime(datetime.fromtimestamp(os.stat(fn).st_ctime), DATE_FORMAT)
+        for root in conn.execute('select name from dirs where parent_dir = -1').fetchall():
+            conn.execute('INSERT INTO runs VALUES(?, ?, ?)', [root[0], dt, dt])
 
     def __init__(self, fn, overwrite=False, rewrite=True, rewrite_admin=True, override=False):
         existed = Path(fn).is_file()
@@ -66,13 +74,20 @@ class TreeWalker:
             self.c.execute('CREATE TABLE dirs (id int, parent_dir int, name text, size int, total_file_count int, '
                            'file_count int, min_mtime int, min_atime int)')
             self.c.execute('CREATE TABLE files (parent_dir int, name text, size int, mtime int, atime int)')
+            self.c.execute('CREATE TABLE runs (root text, start text, end text)')
             self.next_dir_id = 0
         else:
+            # options were added in later versions, deal with cases where there are none
             if self.c.execute(
                     'SELECT name FROM sqlite_master WHERE type="table" AND name="options"').fetchone() is None:
                 set_options()
             else:
                 get_options()
+
+            # runs were added in later versions, deal with cases where there are none
+            if self.c.execute(
+                    'SELECT name FROM sqlite_master WHERE type="table" AND name="runs"').fetchone() is None:
+                self._add_runs(self.c, fn)
 
             self.c.execute('SELECT MAX(id) FROM dirs')
             x = self.c.fetchone()[0]
@@ -89,6 +104,7 @@ class TreeWalker:
         cls.lines += 1
 
     def _do_walk(self, path, parent_dir=-1, filter_callback=None):
+        start = datetime.strftime(datetime.now(), DATE_FORMAT)
         self.__class__.log_freq = 100
         dir_id = self.next_dir_id
         self.next_dir_id += 1
@@ -129,6 +145,9 @@ class TreeWalker:
 
         self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
                        [dir_id, parent_dir, path, total_size, total_count, count, min_mtime, min_atime])
+        end = datetime.strftime(datetime.now(), DATE_FORMAT)
+        if parent_dir == -1:
+            self.c.execute('INSERT INTO runs VALUES(?, ?, ?)', [path, start, end])
         return total_size, total_count, min_mtime, min_atime
 
     def walk(self, path, parent_dir=-1, filter_callback=None):
@@ -180,12 +199,15 @@ class TreeWalker:
             conn_add.close()
 
     def merge(self, fn):
-        self.next_dir_id = self._do_reindex(connect(fn), offset=self.next_dir_id)
+        with connect(fn) as conn:
+            self._add_runs(conn, fn)
+            self.next_dir_id = self._do_reindex(conn, offset=self.next_dir_id)
 
         self.c.execute('ATTACH DATABASE "{}" AS adding'.format(fn))
         self.c.execute('INSERT INTO dirs SELECT * FROM adding.dirs')
         self.c.execute('INSERT INTO files SELECT * FROM adding.files')
         self.c.execute('INSERT INTO no_access SELECT * FROM adding.no_access')
+        self.c.execute('INSERT INTO runs SELECT * FROM adding.runs')
         self.c.execute('COMMIT')
         self.c.execute('DETACH DATABASE adding')
 
@@ -290,6 +312,7 @@ class TreeWalker:
             self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 0)', [-1, -1, p])
 
     def set_host(self, hostname):
+        # noinspection SqlWithoutWhere
         self.c.execute(
             r'UPDATE dirs SET name = "\\" || ? || "\" || SUBSTR(name, 1, 1) || "$\" || SUBSTR(name, 4) '
             r'WHERE name LIKE "_:\%"', [hostname])
@@ -334,7 +357,9 @@ def cli_entry_point():
 
 
 def print_help():
+    from _version import __version__
     print(
+        '\nTreewalker '+__version__+'\n'
         '\nTreewalker traverses a directory tree from a starting path, adding files and\n'
         'folders to a SQLite3 database.\n'
         '\n'
@@ -401,7 +426,7 @@ def main():
                 error('File to merge not found: {}'.format(fn))
                 exit(2)
         for fn in fns:
-            if cfg.set_host is not None:
+            if cfg['set_host'] is not None:
                 with TreeWalker(fn, overwrite=False) as tree_walker:
                     tree_walker.set_host(cfg.set_host)
             info('Merging "{}" into "{}" (not processing further options)'.format(fn, cfg.output))

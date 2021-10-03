@@ -4,6 +4,15 @@
 
 No pending changes for unreleased versions.
 
+## [0.0.11] - 2021-10-04
+
+# Added
+  - `runs` table, saving when the run for a certain root folder (parent_dir == -1) started and ended
+  - support for `runs` on older tables when modifying or merging
+
+# Fixed
+  - `set_host` parameter error, crashing the application when not provided in some cases
+
 ## [0.0.10] - 2021-10-02
 
 # Fixed
@@ -54,6 +63,7 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.0.11]: /../../../tags/0.0.11
 [0.0.10]: /../../../tags/0.0.10
 [0.0.9]: /../../../tags/0.0.9
 [0.0.8]: /../../../tags/0.0.8
