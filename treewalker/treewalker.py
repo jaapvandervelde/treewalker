@@ -357,7 +357,7 @@ def cli_entry_point():
 
 
 def print_help():
-    from _version import __version__
+    from ._version import __version__
     print(
         '\nTreewalker '+__version__+'\n'
         '\nTreewalker traverses a directory tree from a starting path, adding files and\n'
