@@ -4,6 +4,16 @@
 
 No pending changes for unreleased versions.
 
+## [0.1.0] - 2021-11-11
+
+### Added
+  - all query functionality, for file queries, dir queries, file SQL queries, CLI SQL queries and query output formats CSV, JSON and text
+  - CLI options `-qd`/`--query_dir`, `-qf`/`--query_file`, `qh`/`--query_help`, `-ql`/`--query_limit`, `-qo`/`--query_output`, `-qc`/`--query_cli`, and `-qs`/`--query_sql`
+  - `nice_size` for pretty-printing the 'size' column in a query result
+
+### Changed
+  - (BREAKING) the `-o/--output` is now called `-db/--database` to avoid confusion with query output.
+
 ## [0.0.12] - 2021-10-21
 
 ### Fixed
@@ -68,7 +78,8 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
-[0.0.12]: /../../../tags/0.0.11
+[0.1.0]: /../../../tags/0.1.0
+[0.0.12]: /../../../tags/0.0.12
 [0.0.11]: /../../../tags/0.0.11
 [0.0.10]: /../../../tags/0.0.10
 [0.0.9]: /../../../tags/0.0.9

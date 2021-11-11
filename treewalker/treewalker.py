@@ -12,6 +12,8 @@ from sqlite3 import connect, OperationalError, Row
 from logging import info, basicConfig, INFO, error, warning
 from pathlib import Path
 from conffu import Config
+from shlex import split
+from json import dumps
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
@@ -352,8 +354,133 @@ class TreeWalker:
         return self._get_list(p, False)
 
 
-def cli_entry_point():
-    main()
+def run_query(cfg):
+    from treewalker import nice_size
+
+    if not Path(cfg['database']).is_file():
+        error('Database to query {} not found.'.format(cfg['database']))
+        exit(1)
+
+    sql = ''
+    order = 'DESC'
+    order_by = 'size'
+    if cfg['query_sql']:
+        if not Path(cfg['query_sql']).is_file():
+            error('Query file "{}" not found.'.format(cfg['query_sql']))
+            exit(1)
+        with open(cfg['query_sql']) as f:
+            sql = f.read()
+    elif cfg['query_cli']:
+        if isinstance(cfg['query_cli'], list):
+            error('The query passed to --query_cli must be enclosed double quotes.')
+            exit(1)
+        sql = str(cfg['query_cli'])
+    elif (q := cfg['query_file']) or (q := cfg['query_dir']):
+        if not isinstance(q, list):
+            if not isinstance(q, str):
+                error('You must provide some expression for your query: {}'.format(q))
+                print_query_help()
+                exit(1)
+            q = split(q)
+
+        target = 'files' if cfg['query_file'] else 'dirs'
+
+        if q[-1].lower() in ['a_desc', 'a_asc', 's_desc', 's_asc']:
+            order = q[-1][2:].upper()
+            order_by = 'size' if q[-1][0].lower() == 's' else 'name'
+            del(q[-1])
+
+        item, location = (q[:q.index('in')], q[q.index('in')+1:]) if 'in' in q else (q, [])
+
+        item_conditions = ' OR '.join('{}.name LIKE "%{}%"'.format(target, keyword) for keyword in item)
+
+        if location:
+            location_condition = ' {}.parent_dir IN (SELECT id FROM dirs WHERE {})'.format(
+                target, ' OR '.join('name LIKE "%{}%"'.format(keyword) for keyword in location)
+            )
+            conditions = '({}) AND {}'.format(item_conditions, location_condition) \
+                if item_conditions else location_condition
+        else:
+            conditions = item_conditions
+
+        conditions = 'WHERE {}'.format(conditions) if conditions else conditions
+        if target == 'files':
+            sql = 'SELECT {0}.size, {0}.name, parent_dirs.name as location ' \
+                  'FROM {0} JOIN dirs AS parent_dirs ON parent_dirs.id = {0}.parent_dir {1}'.format(
+                target, conditions)
+        else:
+            sql = 'SELECT {0}.size, {0}.name FROM {0} {1}'.format(target, conditions)
+
+        sql = '{} ORDER BY {}.{} {}'.format(sql, target, order_by, order)
+
+    sql = '{} LIMIT {}'.format(sql, cfg['query_limit'])
+
+    csv = cfg['query_output'] in ['csv', 'txt']
+    txt = cfg['query_output'] == 'txt'
+    json = not csv
+
+    con = connect(cfg['database'])
+    if json:
+        con.row_factory = Row
+    cur = con.cursor()
+    first_row = True
+    size_pos = -1
+
+    cur = cur.execute(sql)
+    n = 0
+
+    while True:
+        row = cur.fetchone()
+        if row is None:
+            break
+        n += 1
+        if csv:
+            if first_row:
+                header = [col[0] for col in cur.description]
+                size_pos = [h.lower() for h in header].index('size')
+                if size_pos > -1:
+                    header.insert(size_pos, 'nice_size')
+                print(','.join(header))
+                first_row = False
+            if size_pos > -1:
+                row = (*row[:size_pos], nice_size(row[size_pos]), *row[size_pos:])
+            print(','.join(str(x) for x in row))
+        if json:
+            print(dumps(dict(row)))
+
+    if txt:
+        print('\nTotal rows: {}'.format(n))
+        if n == cfg['query_limit']:
+            print('Query limit reached, there may be more rows in the database')
+
+
+def print_query_help():
+    from ._version import __version__
+    print(
+        '\nTreewalker '+__version__+' - Query help\n'
+        '\n'
+        'Examples:\n'
+        '\n'
+        'Show this help text:\n'
+        '   treewalker -qh\n'
+        'Run the sql query in test.sql and write the result to stdout as JSON:\n'
+        '   treewalker -db my_files.sqlite -qs test.sql -qo json\n'
+        'Run a SQL query directly, to select root folders:\n'
+        '   treewalker -db my_files.sqlite -qc "SELECT * FROM dirs WHERE parent_dir = 0"\n'
+        'Files that have ".txt" or ".csv" in their name in a dir with "temp dir":\n'
+        '   treewalker -db my_files.sqlite -qf .txt .csv in "temp dir" s_desc\n'
+        'Dirs that have "image" in their name inside a dir with "-temp" or ".bak":\n'
+        '   treewalker -db my_files.sqlite -qd "image in -temp .bak asc"\n'
+        '   (to be able to use switch characters like "-" or "/", quotes are needed)\n'
+        'The 10 largest files in the database:\n'
+        '   treewalker -db my_files.sqlite -qf % s_desc -ql 10\n'
+        '\n'
+        'Note that "a_asc", "a_desc", "s_asc" and "s_desc" at the end of a -qd or -qf\n'
+        'expression are modifiers for sorting, alphanumeric or size (default s_desc).\n'
+        '\n'
+        'If you mix these options, only one will get executed; order of preference:\n'
+        '   -qh, -qs, -qc, -qf, -qd (i.e. as shown above)\n\n'
+    )
 
 
 def print_help():
@@ -363,16 +490,24 @@ def print_help():
         '\nTreewalker traverses a directory tree from a starting path, adding files and\n'
         'folders to a SQLite3 database.\n'
         '\n'
-        'Use: `treewalker [options] --output filename --walk path(s) | --merge filename\n'
+        'Use: `treewalker [options] --db filename --walk path(s) | --merge filename\n'
         '\n'
         'Options:\n'
         '-h/--help                     : This text.\n'
-        '-o/--output filename          : SQLite3 database to write to. (required)\n'
+        '-db/--database filename       : SQLite3 database to work on. (required)\n'
         '-w/--walk path [path [..]]    : Path(s) to `walk` and add to the database.\n'
-        '-m/--merge filename           : Filename of 2nd database to merge into output.\n'
+        '-m/--merge path [path [..]]   : Path to additional database(s) to merge.\n'
         '-rm/--remove path [path [..]] : Path(s) to recursively remove from database.\n'
-        '-ow/--overwrite               : Overwrite (wipe) the output database (or to\n'
-        '                                add to it). (default False)\n'
+        '-ow/--overwrite               : Overwrite (wipe) the database (or add to it).\n'
+        '                                (default False/append)\n'
+        '-qd/--query_dir expression    : Run a quick query for dirs in the DB.\n'
+        '-qf/--query_file expression   : Run a quick query for files in the DB.\n'
+        '-qh/--query_help              : Show additional help on quick query syntax.\n'
+        '-ql/--query_limit n           : Maximum #rows from a query (default 1,000).\n'
+        '-qo/--query_output type       : Specify how to output query results. Either:'
+        '                                csv, txt (default, csv with info), or json.\n'
+        '-qc/--query_cli query         : Run a SQLite query from the CLI against the DB.\n'
+        '-qs/--query_sql path          : Run a SQLite query from file against the DB.\n'
         '-rw/--rewrite                 : Rewrite paths to resolved paths. (default True,\n'
         '                                set to False or 0 to change)\n'
         '-ra/--rewrite_admin           : Rewrite local drive letters to administrative\n'
@@ -384,25 +519,28 @@ def print_help():
         'Examples:\n'
         '\n'
         'Create a new database with the structure and contents of two temp directories:\n'
-        '   treewalker --overwrite --output temp.sqlite --walk c:/temp d:/temp e:/temp\n'
+        '   treewalker --overwrite --db temp.sqlite --walk c:/temp d:/temp e:/temp\n'
         'Remove a subset of files already in a database:\n'
-        '   treewalker --remove d:/temp/secret --output temp_files.sqlite\n'
+        '   treewalker --remove d:/temp/secret --db temp_files.sqlite\n'
         'Add previously generated files to the database:\n'
-        '   treewalker --merge other_tmp_files.sqlite --output temp_files.sqlite\n'
+        '   treewalker --merge other_tmp_files.sqlite --db temp_files.sqlite\n'
         'Run treewalker with options from a .json configuration file:\n'
-        '   treewalker -cfg options.json\n'
+        '   treewalker -cfg options.json\n\n'
     )
 
 
-def main():
+def cli_entry_point():
     basicConfig(level=INFO)
 
     cfg = Config.startup(
         defaults={'merge': [], 'overwrite': False, 'remove': [], 'walk': [],
-                  'rewrite': True, 'rewrite_admin': True},
-        aliases={'o': 'output', 'w': 'walk', 'm': 'merge',
+                  'rewrite': True, 'rewrite_admin': True, 'query_limit': 1000, 'query_output': 'txt'},
+        aliases={'db': 'database', 'w': 'walk', 'm': 'merge',
                  'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
-                 'rw': 'rewrite', 'ra': 'rewrite_admin', 'sh': 'set_host'},
+                 'rw': 'rewrite', 'ra': 'rewrite_admin', 'sh': 'set_host',
+                 'qo': 'query_output', 'qh': 'query_help', 'ql': 'query_limit',
+                 'qd': 'query_dir', 'qf': 'query_file',
+                 'qc': 'query_cli', 'qs': 'query_sql'},
         no_key_error=True
     )
 
@@ -410,10 +548,14 @@ def main():
         print_help()
         exit(0)
 
+    if cfg.get_as_type('query_help', bool, False):
+        print_query_help()
+        exit(0)
+
     overwrite = cfg.get_as_type('overwrite', bool, False)
 
-    if 'output' not in cfg:
-        error('Provide "output" in configuration file, or on the command line as "--output <some filename>"')
+    if 'database' not in cfg:
+        error('Provide "database" in configuration file, or on the command line as "--database <some filename>"')
         print_help()
         exit(1)
 
@@ -429,19 +571,28 @@ def main():
             if cfg['set_host'] is not None:
                 with TreeWalker(fn, overwrite=False) as tree_walker:
                     tree_walker.set_host(cfg.set_host)
-            info('Merging "{}" into "{}" (not processing further options)'.format(fn, cfg.output))
-            with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
+            info('Merging "{}" into "{}" (not processing further options)'.format(fn, cfg.database))
+            with TreeWalker(cfg.database, overwrite=overwrite) as tree_walker:
                 tree_walker.merge(fn)
         exit(0)
 
     if cfg['set_host']:
-        with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
+        with TreeWalker(cfg.database, overwrite=overwrite) as tree_walker:
             tree_walker.set_host(cfg.set_host)
 
     if cfg['reindex']:
-        print('Reindexing {}...'.format(cfg.output))
-        with TreeWalker(cfg.output, overwrite=overwrite) as tree_walker:
+        print('Reindexing {}...'.format(cfg.database))
+        with TreeWalker(cfg.database, overwrite=overwrite) as tree_walker:
             tree_walker.reindex()
+        exit(0)
+
+    cfg['query_output'] = cfg['query_output'].lower()
+    if cfg['query_output'] not in ['csv', 'json', 'txt']:
+        error('Unsupported value for --query_output: {}'.format(cfg['query_output']))
+        exit(1)
+
+    if cfg['query_dir'] or cfg['query_file'] or cfg['query_cli'] or cfg['query_sql']:
+        run_query(cfg)
         exit(0)
 
     if cfg['walk']:
@@ -449,11 +600,11 @@ def main():
             cfg.walk = [cfg.walk]
     else:
         cfg['walk'] = []
-    if isinstance(cfg.output, list):
-        cfg.walk.extend(cfg.output[1:])
-        cfg.output = cfg.output[0]
+    if isinstance(cfg.database, list):
+        cfg.walk.extend(cfg.database[1:])
+        cfg.database = cfg.database[0]
 
-    with TreeWalker(cfg.output, overwrite=overwrite,
+    with TreeWalker(cfg.database, overwrite=overwrite,
                     rewrite=cfg.get_as_type('rewrite', bool, True),
                     rewrite_admin=cfg.get_as_type('rewrite_admin', bool, True)) as tree_walker:
         paths = cfg.walk + cfg.arguments[''][2:]
@@ -471,4 +622,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    cli_entry_point()
