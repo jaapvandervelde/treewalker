@@ -437,7 +437,8 @@ def run_query(cfg):
         if csv:
             if first_row:
                 header = [col[0] for col in cur.description]
-                size_pos = [h.lower() for h in header].index('size')
+                fields_lc = [h.lower() for h in header]
+                size_pos = fields_lc.index('size') if 'size' in fields_lc else -1
                 if size_pos > -1:
                     header.insert(size_pos, 'nice_size')
                 print(','.join(header))
