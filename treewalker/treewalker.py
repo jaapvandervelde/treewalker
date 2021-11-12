@@ -31,7 +31,7 @@ class TreeWalker:
 
     @staticmethod
     def _add_runs(conn, fn):
-        conn.execute('CREATE TABLE runs (root text, start text, end text)')
+        conn.execute('CREATE TABLE IF NOT EXISTS runs (root text, start text, end text)')
         dt = datetime.strftime(datetime.fromtimestamp(os.stat(fn).st_ctime), DATE_FORMAT)
         for root in conn.execute('select name from dirs where parent_dir = -1').fetchall():
             conn.execute('INSERT INTO runs VALUES(?, ?, ?)', [root[0], dt, dt])

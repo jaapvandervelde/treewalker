@@ -4,6 +4,11 @@
 
 No pending changes for unreleased versions.
 
+## [0.1.2] - 2021-11-13
+
+### Fixed
+  - merging into a recent database would crash trying to recreate a `runs` table 
+
 ## [0.1.1] - 2021-11-12
 
 ### Fixed
@@ -83,6 +88,7 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.1.2]: /../../../tags/0.1.2
 [0.1.1]: /../../../tags/0.1.1
 [0.1.0]: /../../../tags/0.1.0
 [0.0.12]: /../../../tags/0.0.12
