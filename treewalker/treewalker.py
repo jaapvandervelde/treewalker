@@ -406,8 +406,7 @@ def run_query(cfg):
         conditions = 'WHERE {}'.format(conditions) if conditions else conditions
         if target == 'files':
             sql = 'SELECT {0}.size, {0}.name, parent_dirs.name as location ' \
-                  'FROM {0} JOIN dirs AS parent_dirs ON parent_dirs.id = {0}.parent_dir {1}'.format(
-                target, conditions)
+                  'FROM {0} JOIN dirs AS parent_dirs ON parent_dirs.id = {0}.parent_dir {1}'.format(target, conditions)
         else:
             sql = 'SELECT {0}.size, {0}.name FROM {0} {1}'.format(target, conditions)
 
@@ -505,7 +504,7 @@ def print_help():
         '-qf/--query_file expression   : Run a quick query for files in the DB.\n'
         '-qh/--query_help              : Show additional help on quick query syntax.\n'
         '-ql/--query_limit n           : Maximum #rows from a query (default 1,000).\n'
-        '-qo/--query_output type       : Specify how to output query results. Either:'
+        '-qo/--query_output type       : Specify how to output query results. Either:\n'
         '                                csv, txt (default, csv with info), or json.\n'
         '-qc/--query_cli query         : Run a SQLite query from the CLI against the DB.\n'
         '-qs/--query_sql path          : Run a SQLite query from file against the DB.\n'
