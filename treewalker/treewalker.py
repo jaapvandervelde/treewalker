@@ -355,7 +355,10 @@ class TreeWalker:
 
 
 def run_query(cfg):
-    from treewalker import nice_size
+    try:
+        from treewalker import nice_size
+    except ImportError:
+        from _nice_size import nice_size
 
     if not Path(cfg['database']).is_file():
         error('Database to query {} not found.'.format(cfg['database']))
@@ -412,7 +415,7 @@ def run_query(cfg):
 
         sql = '{} ORDER BY {}.{} {}'.format(sql, target, order_by, order)
 
-    sql = '{} LIMIT {}'.format(sql, cfg['query_limit'])
+    limited_sql = '{} LIMIT {}'.format(sql, cfg['query_limit'])
 
     csv = cfg['query_output'] in ['csv', 'txt']
     txt = cfg['query_output'] == 'txt'
@@ -425,7 +428,18 @@ def run_query(cfg):
     first_row = True
     size_pos = -1
 
-    cur = cur.execute(sql)
+    try:
+        try:
+            cur = cur.execute(limited_sql)
+        except OperationalError as e:
+            if str(e).startswith('near "LIMIT"'):
+                warning('Ignoring LIMIT from treewalker, as provided script already includes a LIMIT.')
+                cur = cur.execute(sql)
+            else:
+                raise e
+    except OperationalError as e:
+        print(f'Operational query error: {e}')
+        exit(1)
     n = 0
 
     while True:

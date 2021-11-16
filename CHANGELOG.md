@@ -4,6 +4,11 @@
 
 No pending changes for unreleased versions.
 
+## [0.1.4] - 2021-11-17
+
+### Fixed
+  - passing a query with an included limit would cause an error as treewalker attempts to set a limit; now the error is caught and the query retries without the set limit - if another error occurs, it is caught and treewalker exits gracefully
+
 ## [0.1.3] - 2021-11-16
 
 ### Fixed
@@ -93,6 +98,7 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.1.4]: /../../../tags/0.1.4
 [0.1.3]: /../../../tags/0.1.3
 [0.1.2]: /../../../tags/0.1.2
 [0.1.1]: /../../../tags/0.1.1
