@@ -28,7 +28,7 @@ Example:
 treewalker --help
 ```
 
-??? note
+!!! note
     The same help text is shown if the user makes a mistake in providing commandline options. The difference is that in that case, an non-zero errorlevel will be set and an error message will also be shown at the top.
 
 #### database
@@ -55,7 +55,7 @@ Example:
 treewalker --database files.sqlite --walk c:\ d:\
 ```
 
-??? Note
+!!! Note
     Paths will be added in order, so there is no real performance advantage from specifying multiple paths over running Treewalker multiple times.
 
 #### merge
@@ -71,12 +71,12 @@ Example:
 treewalker --database files.sqlite --merge more_files.sqlite and_more.sqlite
 ```
 
-??? warning
+!!! warning
     In specific cases, unless used carefully, this can lead to inconsistent results. For example, if you created a database containing a folder `sub`, which at the time had files `1.txt` and `2.txt` in it. But later on, `2.txt` was deleted, `3.txt` was created and then a new database containing `sub` was created. This new database would contain no record of `2.txt`, while the original database would contain no record of `3.txt`. However, if you merge the new database into the old one, the resulting database will show all three files in `sub`, even though there was no point in time at which all three files existed there. 
 
     This may be confusing to a user who expects similar behaviour to running `walk` again, which would update the folder to the current state, instead of merging the current situation into the earlier state. 
 
-??? warning
+!!! warning
     (to developers:) To make the merge possible, the unique identifiers of files and folders in the databases being merged into the target database may be updated, to avoid conflicts. This is important to note if you access the database from other software and create relationships using those identifiers. There are currently no outputs available that provide information about the mapping from old to new identifiers.
 
 #### remove
@@ -109,7 +109,7 @@ Example:
 treewalker --database files.sqlite --walk C:\ --overwrite
 ```
 
-??? Warning
+!!! Warning
     Just in case it wasn't clear already: this *erases all the data* that was previously in the database you are overwriting! If you just want to overwrite existing data with new data, you don't have to specify a switch - that is the default behaviour for [walk](#walk).
 
 #### rewrite
@@ -130,7 +130,7 @@ treewalker --database files.sqlite --walk projects --rewrite False
 ```
 (in this example, paths in all records will start with `projects\some_path\etc.` instead of their absolute path)
 
-??? tip
+!!! tip
     Give it a try by running Treewalker on some existing subfolder and running a query afterward; try `treewalker -db on.sqlite folder --overwrite` and `treewalker -db off.sqlite folder --rewrite_admin False --overwrite` and compare `treewalker -db on.sqlite -qf -ql 10` vs. `treewalker -db off.sqlite -qf -ql 10`
 
 #### rewrite_admin
@@ -154,7 +154,7 @@ treewalker --database files.sqlite --walk C:\Temp --rewrite_admin False
 ```
 (this would write directories as `C:\Temp\etc.` instead of `\\computer01\c$\Temp\etc.`)
 
-??? tip
+!!! tip
     Give it a try by running Treewalker on a small folder and running a query afterward; try `treewalker -db on.sqlite C:\Temp --overwrite` and `treewalker -db off.sqlite C:\Temp --rewrite_admin False --overwrite` and compare `treewalker -db on.sqlite -qf -ql 10` vs. `treewalker -db off.sqlite -qf -ql 10`
 
 #### set_host
@@ -171,7 +171,7 @@ treewalker --database files.sqlite --set_host computer01
 ```
 This would change every local path in `files.sqlite` to become relative to `computer01`, for example `C:\Temp` would be rewritten as `\\computer01\c$\Temp`.
 
-??? tip
+!!! tip
     This option was initially added to allow for conversion of older Treewalker databases, which never wrote paths relative to administrative shares, to be compatible with newer ones. If you have older Treewalker databases, you may want to convert them for that reason. 
 
 #### Queries
@@ -217,7 +217,7 @@ nice_size,size,name
 Total rows: 3
 ```
 
-??? warning
+!!! warning
     In the current implementation, note (visible in the example) that the term that applies to the folder doesn't necessarily apply to its name, but to its entire path. As a result, a term that should apply to the directory can appear *before* a term that applies to the folder it is in. E.g. `__pycache__` is in `dataframe`, but matches itself because of `torch_test`, which comes before `dataframe` in its path!
 
 ##### query_file
@@ -227,7 +227,7 @@ Total rows: 3
 ```
 This command is very similar to [query_dir](#query_dir), except that it won't list directories but files. Terms after `in` will still apply to directories the files should be in.
 
-??? note
+!!! note
     unlike directories, there is no conflict in the order, as the terms apply to the name of the file, not the full path. 
 
 ##### query_limit
