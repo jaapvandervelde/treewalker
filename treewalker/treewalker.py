@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from sys import version_info
+from sys import version_info, argv
 from os import remove
 if version_info[0] == 3 and version_info[1] <= 4:
     from scandir import scandir
@@ -263,7 +263,7 @@ class TreeWalker:
     @staticmethod
     def _is_relative(p1, p2):
         """
-        Returns if p1 is relative to p2, i.e. if p1 is either the same as p2, or a sub-directory of p2
+        Returns if p1 is relative to p2, i.e. if p1 is either the same as p2, or a subdirectory of p2
         :param p1: path
         :param p2: path
         :return: bool, whether p1 is relative to p2
@@ -549,7 +549,7 @@ def cli_entry_point():
     cfg = Config.startup(
         defaults={'merge': [], 'overwrite': False, 'remove': [], 'walk': [],
                   'rewrite': True, 'rewrite_admin': True, 'query_limit': 1000, 'query_output': 'txt'},
-        aliases={'db': 'database', 'w': 'walk', 'm': 'merge',
+        aliases={'db': 'database', 'w': 'walk', 'm': 'merge', 'p': 'walk', 'path': 'walk',
                  'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
                  'rw': 'rewrite', 'ra': 'rewrite_admin', 'sh': 'set_host',
                  'qo': 'query_output', 'qh': 'query_help', 'ql': 'query_limit',
@@ -567,6 +567,9 @@ def cli_entry_point():
         exit(0)
 
     overwrite = cfg.get_as_type('overwrite', bool, False)
+
+    if any(a in ('-p', '/p', '--p', '-path', '/path', '--path') for a in argv):
+        warning('Using -p or --path is deprecated, and will be removed for 2.x, please use -w or --walk instead.')
 
     if 'database' not in cfg:
         error('Provide "database" in configuration file, or on the command line as "--database <some filename>"')

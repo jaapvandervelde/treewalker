@@ -4,6 +4,11 @@
 
 No pending changes for unreleased versions.
 
+## [0.1.5] - 2022-01-10
+
+### Fixed
+  - re-added the `--path/-p` switch as an alias for `--walk/-w` and updated readme to use `walk`; future versions may break backward compatibility by removing `path` again in a more controlled fashion.
+
 ## [0.1.4] - 2021-11-17
 
 ### Fixed
@@ -98,6 +103,7 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.1.5]: /../../../tags/0.1.5
 [0.1.4]: /../../../tags/0.1.4
 [0.1.3]: /../../../tags/0.1.3
 [0.1.2]: /../../../tags/0.1.2

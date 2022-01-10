@@ -11,7 +11,7 @@ pip install treewalker
 And run it from the command line:
 ```commandline
 treewalker --help
-treewalker --output test.sqlite --path C:/temp
+treewalker --output test.sqlite --walk C:/temp
 ```
 
 ## Usage and development
@@ -29,13 +29,13 @@ python treewalker.py --cfg my_config.json
 ```my_config.json
 {
     "output": "test.sqlite",
-    "path": "c:/temp"
+    "walk": "c:/temp"
 }
 ```
 
 Or run the script entirely from the command line:
 ```commandline
-python treewalker.py --output test.sqlite --path c:\temp
+python treewalker.py --output test.sqlite --walk c:\temp
 ```
 
 Or build a single file executable if you need this to run on Windows systems that won't have Python pre-installed:
@@ -46,7 +46,7 @@ scripts/build_pyinstaller_xp.bat c:/target/folder
 ```
 This creates a `treewalker.exe`, which can be run 'anywhere':
 ```commandline
-.\treewalker.exe --output test.sqlite --path c:\temp
+.\treewalker.exe --output test.sqlite --walk c:\temp
 ```
 
 Note that the executable will be limited to running on systems that support the version of Python you're using to build it. I.e. for Windows XP (32-bit or 64-bit), the very latest version of Python you can use is 3.4.4.
