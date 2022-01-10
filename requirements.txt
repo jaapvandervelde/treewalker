@@ -1,3 +1,5 @@
 conffu>=2.2.16
 scandir
 typing
+mkdocs
+pymdown-extensions
