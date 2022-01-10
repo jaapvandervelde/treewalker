@@ -1,0 +1,11 @@
+site_name: Treewalker (for Python)
+nav:
+  - Home: index.md
+  - 'Getting Started': getting_started.md
+  - 'Configuration and CLI': configuration.md
+  - 'Running Queries': queries.md
+  - About: about.md
+theme: readthedocs
+markdown_extensions:
+  - admonition
+  - pymdownx.details

@@ -19,6 +19,7 @@ develop-eggs/
 dist/
 sdist/
 *.egg-info/
+site/
 
 # common virtual environments
 env/

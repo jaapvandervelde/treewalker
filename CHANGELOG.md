@@ -2,12 +2,25 @@
 
 ## [Unreleased]
 
-No pending changes for unreleased versions.
+Pending changes for unreleased versions: none.
+
+## [0.1.6] - 2022-01-10
+
+### Added
+  - MkDocs documentation
+
+### Changed
+  - size columns in query results are no longer automatically supplied with a `nice_` version; instead, if a column is named `nice_<whatever>` it will be passed through `nice_size()`
+
+### Fixes
+  - minor printing errors using f-strings, breaking potential 3.4.4 compatibility
+  - removed walrus assignment, breaking potential 3.4.4 compatibility
+  - results from `-qf` and `-qd` are automatically provided with a `nice_` column for their `size` column, to breaking backward compatibility as a result of the changes  
 
 ## [0.1.5] - 2022-01-10
 
 ### Fixed
-  - re-added the `--path/-p` switch as an alias for `--walk/-w` and updated readme to use `walk`; future versions may break backward compatibility by removing `path` again in a more controlled fashion.
+  - re-added the `--path/-p` switch as an alias for `--walk/-w` and updated readme to use `walk`; future versions may break backward compatibility by removing `path` again in a more controlled fashion
 
 ## [0.1.4] - 2021-11-17
 
@@ -72,7 +85,7 @@ treewalker --set_host myhostname --output existing.sqlite
 
 ### Added
   - list functions allowing quick retrieval of file and directory lists from the database
-  - installer build script specific to XP, tested to work with Python 3.4.4, Pyinstaller 3.0, PyPIwin32 219 and Conffu 2.2.16 
+  - installer build script specific to XP, tested to work with Python 3.4.4, Pyinstaller 3.0, PyPI win32 219 and Conffu 2.2.16 
 
 ### Changed
   - (BREAKING) removed `top_match` option, now providing callback for cases where filtering is required
@@ -103,6 +116,7 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.1.6]: /../../../tags/0.1.6
 [0.1.5]: /../../../tags/0.1.5
 [0.1.4]: /../../../tags/0.1.4
 [0.1.3]: /../../../tags/0.1.3

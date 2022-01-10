@@ -11,7 +11,7 @@ def nice_size(size, si=False, decimal_precision=1):
     threshold = 1000 if si else 1024
 
     if abs(size) < threshold:
-        return f'{size} B'
+        return '{} B'.format(size)
 
     units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] if si \
         else ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
@@ -24,5 +24,4 @@ def nice_size(size, si=False, decimal_precision=1):
         if round(abs(size) * r) / r < threshold or u == len(units) - 1:
             break
 
-    # noinspection PyStringFormat
-    return (f'%.{decimal_precision}f ' % size) + units[u]
+    return ('%.{}f '.format(decimal_precision) % size) + units[u]

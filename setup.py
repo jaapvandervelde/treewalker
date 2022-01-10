@@ -37,6 +37,12 @@ setup(
     # TODO: update keywords
     keywords=['system', 'tool', 'database'],
     install_requires=['conffu==2.2.16', 'scandir', 'typing'],
+    extras_require={
+        'dev': [
+            'mkdocs',
+            'pymdown-extensions'
+        ]
+    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

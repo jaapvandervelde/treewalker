@@ -378,13 +378,18 @@ def run_query(cfg):
             error('The query passed to --query_cli must be enclosed double quotes.')
             exit(1)
         sql = str(cfg['query_cli'])
-    elif (q := cfg['query_file']) or (q := cfg['query_dir']):
+    elif cfg['query_file'] or cfg['query_dir']:
+        q = cfg['query_file'] if 'query_file' in cfg else cfg['query_dir']
         if not isinstance(q, list):
             if not isinstance(q, str):
-                error('You must provide some expression for your query: {}'.format(q))
-                print_query_help()
-                exit(1)
-            q = split(q)
+                if q is not None:
+                    error('You must provide some expression for your query: {}'.format(q))
+                    print_query_help()
+                    exit(1)
+                else:
+                    q = []
+            else:
+                q = split(q)
 
         target = 'files' if cfg['query_file'] else 'dirs'
 
@@ -426,7 +431,7 @@ def run_query(cfg):
         con.row_factory = Row
     cur = con.cursor()
     first_row = True
-    size_pos = -1
+    nice_pos = []
 
     try:
         try:
@@ -438,7 +443,7 @@ def run_query(cfg):
             else:
                 raise e
     except OperationalError as e:
-        print(f'Operational query error: {e}')
+        print('Operational query error: {}'.format(e))
         exit(1)
     n = 0
 
@@ -450,14 +455,11 @@ def run_query(cfg):
         if csv:
             if first_row:
                 header = [col[0] for col in cur.description]
-                fields_lc = [h.lower() for h in header]
-                size_pos = fields_lc.index('size') if 'size' in fields_lc else -1
-                if size_pos > -1:
-                    header.insert(size_pos, 'nice_size')
+                nice_pos = [i for i, f in enumerate(header) if f.startswith('nice_')]
                 print(','.join(header))
                 first_row = False
-            if size_pos > -1:
-                row = (*row[:size_pos], nice_size(row[size_pos]), *row[size_pos:])
+            if nice_pos:
+                row = (x if i not in nice_pos else nice_size(x) for i, x in enumerate(row))
             print(','.join(str(x) for x in row))
         if json:
             print(dumps(dict(row)))
