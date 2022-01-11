@@ -4,11 +4,12 @@
 
 Pending changes for unreleased versions: none.
 
-## [0.1.7] - 2022-01-11
+## [0.1.8] - 2022-01-11
 
 ### Added
   - add documentation with MkDocs on https://treewalker.readthedocs.io
   - add `--query_nice/-qn` option that allows specifying unit (`bin` or `si`) and precision for calls to nice_size on query fields that start with `'nice_'`
+  - add `site` to project cleanup scripts
 
 ### Changed
   - no longer add `nice_size` fields in query results after `size` fields; instead, pass any column named `nice_<whatever>` through `nice_size()`
@@ -21,6 +22,8 @@ Pending changes for unreleased versions: none.
   - provide a `nice_` column for the `size` column for results from `-qf` and `-qd`, avoid breaking backward compatibility as a result of change in this version
   - `-qo json` now behaves the same as `-qo csv`, provide 'nice' size fields
   - report option mismatches for `rewrite` and `rewrite_admin` correctly, would get caught but then throw exception
+  - updated README.md to match up-to-date options, avoiding deprecated options.
+  - fixed broken links in documentation and changelog
 
 ## [0.1.5] - 2022-01-10
 
@@ -121,6 +124,8 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.1.8]: /../../../tags/0.1.8
+[0.1.7]: /../../../tags/0.1.7
 [0.1.6]: /../../../tags/0.1.6
 [0.1.5]: /../../../tags/0.1.5
 [0.1.4]: /../../../tags/0.1.4
