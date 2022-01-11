@@ -4,7 +4,7 @@
 
 Pending changes for unreleased versions: none.
 
-## [0.1.6] - 2022-01-11
+## [0.1.7] - 2022-01-11
 
 ### Added
   - add documentation with MkDocs on https://treewalker.readthedocs.io
