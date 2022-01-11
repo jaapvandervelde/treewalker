@@ -4,18 +4,23 @@
 
 Pending changes for unreleased versions: none.
 
-## [0.1.6] - 2022-01-10
+## [0.1.6] - 2022-01-11
 
 ### Added
-  - MkDocs documentation
+  - add documentation with MkDocs on https://treewalker.readthedocs.io
+  - add `--query_nice/-qn` option that allows specifying unit (`bin` or `si`) and precision for calls to nice_size on query fields that start with `'nice_'`
 
 ### Changed
-  - size columns in query results are no longer automatically supplied with a `nice_` version; instead, if a column is named `nice_<whatever>` it will be passed through `nice_size()`
+  - no longer add `nice_size` fields in query results after `size` fields; instead, pass any column named `nice_<whatever>` through `nice_size()`
+  - make `-qf` select all files, no longer require `-qf %` because `-qf` would default to `True` as the conffu default; same for `-qd`
+  - save `start` and `end` in the `runs` table as UTC, previously as local time
 
 ### Fixes
-  - minor printing errors using f-strings, breaking potential 3.4.4 compatibility
-  - removed walrus assignment, breaking potential 3.4.4 compatibility
-  - results from `-qf` and `-qd` are automatically provided with a `nice_` column for their `size` column, to breaking backward compatibility as a result of the changes  
+  - remove f-strings from some print statements, breaking potential 3.4.4 compatibility
+  - remove walrus assignment, breaking potential 3.4.4 compatibility
+  - provide a `nice_` column for the `size` column for results from `-qf` and `-qd`, avoid breaking backward compatibility as a result of change in this version
+  - `-qo json` now behaves the same as `-qo csv`, provide 'nice' size fields
+  - report option mismatches for `rewrite` and `rewrite_admin` correctly, would get caught but then throw exception
 
 ## [0.1.5] - 2022-01-10
 

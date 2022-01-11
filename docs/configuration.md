@@ -21,7 +21,7 @@ treewalker --database files.sqlite --walk C:\Temp
 --help | -h
 ```
 
-Shows a help text on the console (including the installed Treewalker version number at the top).
+Shows a help text for CLIU parameters on the console (including the installed Treewalker version number at the top). You can get more help on query-specific parameters with [query_help](#query_help) 
 
 Example:
 ```commandline
@@ -133,6 +133,9 @@ treewalker --database files.sqlite --walk projects --rewrite False
 !!! tip
     Give it a try by running Treewalker on some existing subfolder and running a query afterward; try `treewalker -db on.sqlite folder --overwrite` and `treewalker -db off.sqlite folder --rewrite_admin False --overwrite` and compare `treewalker -db on.sqlite -qf -ql 10` vs. `treewalker -db off.sqlite -qf -ql 10`
 
+!!! note
+    Since mixing walks with `rewrite` both on and off in a single database is likely to lead to very confusing data (either it should all be relative to the same working directory, or it should be absolute), this setting and `rewrite_admin` are both written to the database. Future runs will use that value if none is provided, or cause an error message if they are mixed.
+
 #### rewrite_admin
 
 ```commandline
@@ -220,6 +223,9 @@ Total rows: 3
 !!! warning
     In the current implementation, note (visible in the example) that the term that applies to the folder doesn't necessarily apply to its name, but to its entire path. As a result, a term that should apply to the directory can appear *before* a term that applies to the folder it is in. E.g. `__pycache__` is in `dataframe`, but matches itself because of `torch_test`, which comes before `dataframe` in its path!
 
+!!! note
+    If you need to use characters with special meaning on the commandline, like `-` or `/` denoting a new switch, put the entire value of `-qd` in quotes, for example `treewalker -db files.sqlite -qd "__pycache__ in -python"` for any directory that has `'-python'` in its name.
+
 ##### query_file
 
 ```commandline
@@ -237,11 +243,24 @@ This command is very similar to [query_dir](#query_dir), except that it won't li
 ```
 By default, a query will return up to 1,000 results. You can have it more or fewer records by changing this option.
 
-For example:
+Example:
 ```commandline
-treewalker -db files.sqlite -qf % -ql 10
+treewalker -db files.sqlite -qf -ql 10
 ```
 This will show the top 10 (or fewer, if there are fewer) largest files in the database.
+
+##### query_nice
+
+```commandline
+--query_nice | -qn [bin|si] n
+```
+By default, when fields in a query are named `nice_<something>`, they will be formatted using `nice_size`, using binary units (KiB, MiB, GiB, etc., powers of 1024) and 1 decimal precision (e.g. `'63.4 MiB'`). You can specify whether binary or SI units (KB, MB, GB, etc., powers of 1000) should be used and what the decimal precision should be.
+
+Example:
+```commandline
+treewalker -db files.sqlite -qc "SELECT size AS nice_size, * FROM files WHERE name LIKE '%.py'" -ql 20 -qn si 3
+```
+This will show the top 20 (or fewer, if there are fewer) of the largest Python source files in the database, with a precision of 3 decimals and using SI units (e.g. 66.480 MiB).
 
 ##### query_output
 
@@ -252,13 +271,13 @@ By default, Treewalker will write the result of a query as .csv records, followe
 
 For example:
 ```commandline
-treewalker -db files.sqlite -qf % -qo json
+treewalker -db files.sqlite -qf -qo json
 ```
 This will show the names of all the files in the database, formatted as JSON. Some example output:
 ```json
-{"nice_size": 21378, "size": 21378, "name": "\\\\HOST\\c$\\work\\treewalker\\Lib\\site-packages\\pip\\_vendor\\colorama\\__pycache__"}
-{"nice_size": 21330, "size": 21330, "name": "\\\\HOST\\c$\\work\\pz\\Lib\\site-packages\\pip\\_vendor\\colorama\\__pycache__"}
-{"nice_size": 17162, "size": 17162, "name": "\\\\HOST\\c$\\work\\torch_test\\Lib\\site-packages\\torch\\utils\\data\\datapipes\\dataframe\\__pycache__"}
+{"size": 21378, "name": "\\\\HOST\\c$\\work\\treewalker\\Lib\\site-packages\\pip\\_vendor\\colorama\\__pycache__"}
+{"size": 21330, "name": "\\\\HOST\\c$\\work\\pz\\Lib\\site-packages\\pip\\_vendor\\colorama\\__pycache__"}
+{"size": 17162, "name": "\\\\HOST\\c$\\work\\torch_test\\Lib\\site-packages\\torch\\utils\\data\\datapipes\\dataframe\\__pycache__"}
 ```
 
 ##### query_cli
@@ -272,7 +291,7 @@ Example:
 ```commandline
 treewalker -db files.sqlite -qc "SELECT * FROM files WHERE name LIKE '%.py' ORDER BY size DESC" -ql 10
 ```
-This will select the 10 largest Python source files in the database. More examples and more on the structure of the database in [Running Queries](/queries)
+This will select the 10 largest Python source files in the database. More examples and more on the structure of the database in [Running Queries](../queries)
 
 ##### query_sql
 

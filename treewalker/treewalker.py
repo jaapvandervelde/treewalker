@@ -68,7 +68,7 @@ class TreeWalker:
                     if option != type(option)(value):
                         if override:
                             self.c.execute('UPDATE options SET value = ? WHERE key = ?', (option, key))
-                        error('options for database do not match, \'{}\' is {}', key, option)
+                        error('options for database do not match, \'{}\' is {}, was {}'.format(key, option, value))
 
         if not existed or overwrite:
             set_options()
@@ -106,7 +106,7 @@ class TreeWalker:
         cls.lines += 1
 
     def _do_walk(self, path, parent_dir=-1, filter_callback=None):
-        start = datetime.strftime(datetime.now(), DATE_FORMAT)
+        start = datetime.strftime(datetime.utcnow(), DATE_FORMAT)
         self.__class__.log_freq = 100
         dir_id = self.next_dir_id
         self.next_dir_id += 1
@@ -147,7 +147,7 @@ class TreeWalker:
 
         self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
                        [dir_id, parent_dir, path, total_size, total_count, count, min_mtime, min_atime])
-        end = datetime.strftime(datetime.now(), DATE_FORMAT)
+        end = datetime.strftime(datetime.utcnow(), DATE_FORMAT)
         if parent_dir == -1:
             self.c.execute('INSERT INTO runs VALUES(?, ?, ?)', [path, start, end])
         return total_size, total_count, min_mtime, min_atime
@@ -382,12 +382,13 @@ def run_query(cfg):
         q = cfg['query_file'] if 'query_file' in cfg else cfg['query_dir']
         if not isinstance(q, list):
             if not isinstance(q, str):
-                if q is not None:
+                if q is not True:
                     error('You must provide some expression for your query: {}'.format(q))
                     print_query_help()
                     exit(1)
                 else:
-                    q = []
+                    # just the default sort order
+                    q = ['s_desc']
             else:
                 q = split(q)
 
@@ -447,22 +448,40 @@ def run_query(cfg):
         exit(1)
     n = 0
 
+    bin_nice = 'si' not in cfg['query_nice']
+    try:
+        dp_nice = int(cfg['query_nice'][0])
+    except ValueError:
+        try:
+            dp_nice = int(cfg['query_nice'][1])
+        except ValueError:
+            # default precision
+            dp_nice = 1
+
     while True:
         row = cur.fetchone()
         if row is None:
             break
         n += 1
-        if csv:
-            if first_row:
-                header = [col[0] for col in cur.description]
-                nice_pos = [i for i, f in enumerate(header) if f.startswith('nice_')]
+        if first_row:
+            header = [col[0] for col in cur.description]
+            nice_pos = [i for i, f in enumerate(header) if f.startswith('nice_')]
+            if csv:
                 print(','.join(header))
-                first_row = False
+            first_row = False
+        if csv:
             if nice_pos:
-                row = (x if i not in nice_pos else nice_size(x) for i, x in enumerate(row))
+                row = (x if i not in nice_pos else nice_size(x, not bin_nice, dp_nice) for i, x in enumerate(row))
             print(','.join(str(x) for x in row))
-        if json:
-            print(dumps(dict(row)))
+        elif json:
+            if nice_pos:
+                row = {
+                    k: x if i not in nice_pos else nice_size(x, not bin_nice, dp_nice)
+                    for i, (k, x) in enumerate(dict(row).items())
+                }
+            else:
+                row = dict(row)
+            print(dumps(row))
 
     if txt:
         print('\nTotal rows: {}'.format(n))
@@ -488,8 +507,8 @@ def print_query_help():
         'Dirs that have "image" in their name inside a dir with "-temp" or ".bak":\n'
         '   treewalker -db my_files.sqlite -qd "image in -temp .bak asc"\n'
         '   (to be able to use switch characters like "-" or "/", quotes are needed)\n'
-        'The 10 largest files in the database:\n'
-        '   treewalker -db my_files.sqlite -qf % s_desc -ql 10\n'
+        'The 10 largest files in the database with SI-type sizes with precision 2:\n'
+        '   treewalker -db my_files.sqlite -qf s_desc -ql 10 -qn si 2\n'
         '\n'
         'Note that "a_asc", "a_desc", "s_asc" and "s_desc" at the end of a -qd or -qf\n'
         'expression are modifiers for sorting, alphanumeric or size (default s_desc).\n'
@@ -520,6 +539,8 @@ def print_help():
         '-qf/--query_file expression   : Run a quick query for files in the DB.\n'
         '-qh/--query_help              : Show additional help on quick query syntax.\n'
         '-ql/--query_limit n           : Maximum #rows from a query (default 1,000).\n'
+        '-qn/--query_nice [si|bin] n   : Output nice size as SI or binary, with \n'
+        '                                precision n (default bin 1).\n'
         '-qo/--query_output type       : Specify how to output query results. Either:\n'
         '                                csv, txt (default, csv with info), or json.\n'
         '-qc/--query_cli query         : Run a SQLite query from the CLI against the DB.\n'
@@ -550,13 +571,14 @@ def cli_entry_point():
 
     cfg = Config.startup(
         defaults={'merge': [], 'overwrite': False, 'remove': [], 'walk': [],
-                  'rewrite': True, 'rewrite_admin': True, 'query_limit': 1000, 'query_output': 'txt'},
+                  'rewrite': True, 'rewrite_admin': True, 'query_limit': 1000, 'query_output': 'txt',
+                  'query_nice': ['bin', '1']},
         aliases={'db': 'database', 'w': 'walk', 'm': 'merge', 'p': 'walk', 'path': 'walk',
                  'ow': 'overwrite', 'rm': 'remove', 'h': 'help', '?': 'help',
                  'rw': 'rewrite', 'ra': 'rewrite_admin', 'sh': 'set_host',
                  'qo': 'query_output', 'qh': 'query_help', 'ql': 'query_limit',
                  'qd': 'query_dir', 'qf': 'query_file',
-                 'qc': 'query_cli', 'qs': 'query_sql'},
+                 'qc': 'query_cli', 'qs': 'query_sql', 'qn': 'query_nice'},
         no_key_error=True
     )
 
@@ -613,6 +635,9 @@ def cli_entry_point():
     if cfg['query_dir'] or cfg['query_file'] or cfg['query_cli'] or cfg['query_sql']:
         run_query(cfg)
         exit(0)
+
+    if not isinstance(cfg['query_nice'], list):
+        cfg['query_nice'] = [cfg['query_nice']]
 
     if cfg['walk']:
         if not isinstance(cfg.walk, list):

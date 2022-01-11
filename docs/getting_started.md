@@ -76,6 +76,6 @@ This would show you (up to) the 10 largest files in the database.
 
 ### More options
 
-If you need more control over how Treewalker collects data, or you want to combine or manipulate existing databases, look at [Configuration and CLI](/configuration).
+If you need more control over how Treewalker collects data, or you want to combine or manipulate existing databases, look at [Configuration and CLI](../configuration).
 
-If you want to get more specific data from the database, or use the data in your own scripts and applications, read [Running Queries](/queries).
+If you want to get more specific data from the database, or use the data in your own scripts and applications, read [Running Queries](../queries).

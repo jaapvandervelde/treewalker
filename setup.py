@@ -4,6 +4,12 @@ from setuptools import setup
 
 __name__ = 'treewalker'
 
+project_urls = {
+    'Home page': 'https://pypi.org/project/treewalker',
+    'Source Code': 'https://github.com/jaapvandervelde/treewalker',
+    'Documentation': 'https://treewalker.readthedocs.io/'
+}
+
 version_fn = os.path.join(__name__, "_version.py")
 __version__ = "unknown"
 try:
@@ -34,6 +40,7 @@ setup(
     author='BMT Commercial Australia Pty Ltd, Jaap van der Velde',
     author_email='jaap.vandervelde@bmtglobal.com',
     url='https://gitlab.com/bmt-aus/tool/treewalker.git',
+    project_urls=project_urls,
     # TODO: update keywords
     keywords=['system', 'tool', 'database'],
     install_requires=['conffu==2.2.16', 'scandir', 'typing'],
