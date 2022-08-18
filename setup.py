@@ -43,7 +43,7 @@ setup(
     project_urls=project_urls,
     # TODO: update keywords
     keywords=['system', 'tool', 'database'],
-    install_requires=['conffu==2.2.16', 'scandir', 'typing'],
+    install_requires=['conffu>=2.2.16', 'scandir', 'typing'],
     extras_require={
         'dev': [
             'mkdocs',

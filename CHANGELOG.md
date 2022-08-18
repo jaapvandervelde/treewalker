@@ -4,6 +4,11 @@
 
 Pending changes for unreleased versions: none.
 
+## [0.1.9] - 2022-08-19
+
+### Fixed
+  - relax strict dependency on `conffu` to a `>=` dependency
+
 ## [0.1.8] - 2022-01-11
 
 ### Added

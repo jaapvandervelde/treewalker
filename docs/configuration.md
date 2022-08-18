@@ -1,12 +1,12 @@
 ## Configuration and CLI
 
-Every option available on the commandline interface can be overridden using a configuration file.
+Every option available on the command-line interface can be provided using a configuration file. When an option is both on the command-line and in the configuration, the command-line wins.
 
 ### CLI Options
 
 For any option that acts as a simple on/off switch, you can either just specify the option to imply turning it on, or explicitly pass `0` or `false` to turn it off, or `1` or `true` to turn it on. This may be useful if you want to be very clear in a batch file or log about what happens. 
 
-For example, the default is for [overwrite](overwrite) to be off (`False`) and for [rewrite](rewrite) to be on (`True`). So, this:
+For example, the default is for [overwrite](#overwrite) to be off (`False`) and for [rewrite](#rewrite) to be on (`True`). So, this:
 ```commandline
 treewalker --database files.sqlite --walk C:\Temp --overwrite false --rewrite true
 ```
@@ -29,7 +29,7 @@ treewalker --help
 ```
 
 !!! note
-    The same help text is shown if the user makes a mistake in providing commandline options. The difference is that in that case, an non-zero errorlevel will be set and an error message will also be shown at the top.
+    The same help text is shown if the user makes a mistake in providing command-line options. The difference is that in that case, an non-zero errorlevel will be set and an error message will also be shown at the top.
 
 #### database
 
@@ -179,7 +179,7 @@ This would change every local path in `files.sqlite` to become relative to `comp
 
 #### Queries
 
-The rest of the commandline options are all intended for querying an existing database.
+The rest of the command-line options are all intended for querying an existing database.
 
 ##### query_help
 
@@ -187,7 +187,7 @@ The rest of the commandline options are all intended for querying an existing da
 --query_help | -qh
 ```
 
-Shows a help text on the console specific to query commandline parameters for Treewalker.
+Shows a help text on the console specific to query command-line parameters for Treewalker.
 
 Example:
 ```commandline
@@ -224,7 +224,7 @@ Total rows: 3
     In the current implementation, note (visible in the example) that the term that applies to the folder doesn't necessarily apply to its name, but to its entire path. As a result, a term that should apply to the directory can appear *before* a term that applies to the folder it is in. E.g. `__pycache__` is in `dataframe`, but matches itself because of `torch_test`, which comes before `dataframe` in its path!
 
 !!! note
-    If you need to use characters with special meaning on the commandline, like `-` or `/` denoting a new switch, put the entire value of `-qd` in quotes, for example `treewalker -db files.sqlite -qd "__pycache__ in -python"` for any directory that has `'-python'` in its name.
+    If you need to use characters with special meaning on the command-line, like `-` or `/` denoting a new switch, put the entire value of `-qd` in quotes, for example `treewalker -db files.sqlite -qd "__pycache__ in -python"` for any directory that has `'-python'` in its name.
 
 ##### query_file
 
@@ -285,7 +285,7 @@ This will show the names of all the files in the database, formatted as JSON. So
 ```commandline
 --query_cli | -qc "<valid SQL query>"
 ```
-You can also just write SQL queries directly on the commandline interface. Of course this requires that you are familar with the (simple) database structure of a Treewalker file system database. 
+You can also just write SQL queries directly on the command-line interface. Of course this requires that you are familar with the (simple) database structure of a Treewalker file system database. 
 
 Example:
 ```commandline
@@ -298,7 +298,7 @@ This will select the 10 largest Python source files in the database. More exampl
 ```commandline
 --query_sql | -qs filepath
 ```
-Instead of providing the SQL directly on the commandline, you can also save a query in a text file and have Treewalker load and run it. As with `query_cli`, you can provide other regular options.
+Instead of providing the SQL directly on the command-line, you can also save a query in a text file and have Treewalker load and run it. As with `query_cli`, you can provide other regular options.
 
 Example:
 ```commandline

@@ -4,7 +4,7 @@ Although you don't need to know any Python to use Treewalker, you do need Python
 
 ### Installation
 
-It is strongly recommended you install Treewalker in its own virtual environment, or an environment that you reserve for system-wide commandline tools, but outside of environments you need for development that don't rely on Treewalker. If you do create a separate virtual environment, remember that it will need to be (re)activated prior to using Treewalker. 
+It is strongly recommended you install Treewalker in its own virtual environment, or an environment that you reserve for system-wide command-line tools, but outside of environments you need for development that don't rely on Treewalker. If you do create a separate virtual environment, remember that it will need to be (re)activated prior to using Treewalker. 
 
 You can install Treewalker from PyPI using `pip` like this:
 ```commandline

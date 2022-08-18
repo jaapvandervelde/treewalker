@@ -1,6 +1,6 @@
 ## Running Queries
 
-There is an [explanation of the commandline options for running queries](../configuration/#queries) in the Configuration and CLI section. This section goes into a bit more detail on how to construct queries and how to get the most out of the file system database.
+There is an [explanation of the command-line options for running queries](../configuration/#queries) in the Configuration and CLI section. This section goes into a bit more detail on how to construct queries and how to get the most out of the file system database.
 
 ### CLI Queries
 
@@ -80,7 +80,7 @@ from treewalker import TreeWalker
 tw = TreeWalker('files.sqlite')
 tw.walk(r'C:\Temp')
 ```
-The `treewalker.py` source code itself provides ample examples of how to use the class - keep in mind that Treewalker was written primarily as a commandline utility. The class does all the work, but hasn't been optimised for user-friendliness from a developer's point of view. Future versions *may* include a shell class that accepts configuration similar to the shell script.
+The `treewalker.py` source code itself provides ample examples of how to use the class - keep in mind that Treewalker was written primarily as a command-line utility. The class does all the work, but hasn't been optimised for user-friendliness from a developer's point of view. Future versions *may* include a shell class that accepts configuration similar to the shell script.
 
 One feature of the current Python class however is the possibility to pass a callback to the `.walk()` method, which allows you to exclude files and directories on whatever criterium you like. 
 
@@ -100,7 +100,7 @@ tw.walk(r'C:\Temp')
 The callback returns `True` when passed a filename, or when passed a directory name of a directory that does not contain a `.ignore` file - that's all that's needed.
 
 !!! note 
-    Some options can be set on the `TreeWalker()` constructor, including `override` which would allow running mixed [rewrite](../configuration/#rewrite) and [rewrite_admin](../configuration/#rewrite) walks - this is not recommended, but mentioned here because it is the only way to do so. Without `override` set to `True` (which is impossible from the commandline), mixing these modes will cause an error. 
+    Some options can be set on the `TreeWalker()` constructor, including `override` which would allow running mixed [rewrite](../configuration/#rewrite) and [rewrite_admin](../configuration/#rewrite) walks - this is not recommended, but mentioned here because it is the only way to do so. Without `override` set to `True` (which is impossible from the command-line), mixing these modes will cause an error. 
 
 Accessing the SQLite database is straightforward:
 ```python

@@ -9,4 +9,4 @@
 Navigate using the tree on the left, or jump to:
 
 - [Instructions for installation](../getting_started/#installation)
-- [A detailed description of the commandline options](../configuration/#cli-options)
+- [A detailed description of the command-line options](../configuration/#cli-options)
