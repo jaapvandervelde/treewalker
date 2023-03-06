@@ -4,6 +4,11 @@
 
 Pending changes for unreleased versions: none.
 
+## [0.1.10] - 2023-03-06
+
+### Changed
+  - `OSError` now caught as well, error message reported on standard out, to catch WinError 422 
+
 ## [0.1.9] - 2022-08-19
 
 ### Fixed

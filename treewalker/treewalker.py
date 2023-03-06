@@ -135,14 +135,9 @@ class TreeWalker:
                     total_size += size
                     min_mtime = min(min_mtime, mtime)
                     min_atime = min(min_atime, atime)
-        except PermissionError:
-            print('Permission error trying to process: {}'.format(path))
+        except (PermissionError, FileNotFoundError, OSError) as e:
+            print('Error trying to process "{}": {}'.format(path, e))
             self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 0)',
-                           [dir_id, parent_dir, path])
-        except FileNotFoundError:
-            print('File not found error trying to process: {}'.format(path))
-            print(os.getcwd())
-            self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 1)',
                            [dir_id, parent_dir, path])
 
         self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
@@ -331,7 +326,8 @@ class TreeWalker:
         self.c.execute('SELECT name, id FROM dirs WHERE parent_dir = ?', [d])
         result = {Path(r[0]).name: self.get_tree(d=r[1]) for r in self.c.fetchall()}
         self.c.execute('SELECT name FROM files WHERE parent_dir = ?', [d])
-        return result | {r[0]: None for r in self.c.fetchall()}
+        result.update({r[0]: None for r in self.c.fetchall()})
+        return result
 
     def _get_list(self, p, files=True):
         rf = self._conn.row_factory
