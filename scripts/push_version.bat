@@ -9,10 +9,10 @@ if errorlevel 1 goto uncommitted_changes
 call scripts/run_tests.bat
 if errorlevel 1 goto tests_failed
 git push origin
-git push github
+git push gitlab
 git tag %1
 git push origin %1
-git push github %1
+git push gitlab %1
 goto end
 
 :tests_failed
