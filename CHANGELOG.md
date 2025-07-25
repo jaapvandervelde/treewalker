@@ -4,6 +4,15 @@
 
 Pending changes for unreleased versions: none.
 
+## [0.2.0] - 2025-07-25
+
+### Added
+  - update with `pyproject.toml`
+  - columns for `max_atime` and `max_mtime`
+
+### Changed
+  - schema for `dirs` with added `max_atime` and `max_mtime` makes this version incompatible with previous databases.
+
 ## [0.1.10] - 2023-03-06
 
 ### Changed

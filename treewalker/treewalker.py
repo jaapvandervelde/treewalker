@@ -74,7 +74,7 @@ class TreeWalker:
             set_options()
             self.c.execute('CREATE TABLE no_access (id int, parent_dir int, name text, problem int)')
             self.c.execute('CREATE TABLE dirs (id int, parent_dir int, name text, size int, total_file_count int, '
-                           'file_count int, min_mtime int, min_atime int)')
+                           'file_count int, min_mtime int, min_atime int, max_mtime int, max_atime int)')
             self.c.execute('CREATE TABLE files (parent_dir int, name text, size int, mtime int, atime int)')
             self.c.execute('CREATE TABLE runs (root text, start text, end text)')
             self.next_dir_id = 0
@@ -111,7 +111,8 @@ class TreeWalker:
         dir_id = self.next_dir_id
         self.next_dir_id += 1
         self.log_loop('Processing {}, {}'.format(path, dir_id))
-        total_size, min_mtime, min_atime, total_count, count, size = 0, 10000000000, 10000000000, 0, 0, 0
+        total_size, min_mtime, min_atime, max_mtime, max_atime, total_count, count, size = (
+            0, 10000000000, 10000000000, 0, 0, 0, 0, 0)
         try:
             for entry in scandir(path):
                 if filter_callback is None or filter_callback(entry.name):
@@ -135,13 +136,15 @@ class TreeWalker:
                     total_size += size
                     min_mtime = min(min_mtime, mtime)
                     min_atime = min(min_atime, atime)
+                    max_mtime = max(max_mtime, mtime)
+                    max_atime = max(max_atime, atime)
         except (PermissionError, FileNotFoundError, OSError) as e:
             print('Error trying to process "{}": {}'.format(path, e))
             self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 0)',
                            [dir_id, parent_dir, path])
 
-        self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
-                       [dir_id, parent_dir, path, total_size, total_count, count, min_mtime, min_atime])
+        self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                       [dir_id, parent_dir, path, total_size, total_count, count, min_mtime, min_atime, max_mtime, max_atime])
         end = datetime.strftime(datetime.utcnow(), DATE_FORMAT)
         if parent_dir == -1:
             self.c.execute('INSERT INTO runs VALUES(?, ?, ?)', [path, start, end])
@@ -173,7 +176,7 @@ class TreeWalker:
         def do_add(dir_id, parent_dir):
             nonlocal ca
             ca.execute('SELECT * FROM dirs WHERE id = ?', [dir_id])
-            self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
+            self.c.execute('INSERT INTO dirs VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                            (self.next_dir_id, parent_dir) + ca.fetchone()[2:])
             ca.execute('SELECT * FROM files WHERE parent_dir = ?', [dir_id])
             for f in ca.fetchall():
@@ -222,11 +225,11 @@ class TreeWalker:
 
         cursor.execute('ALTER TABLE dirs RENAME TO old_dirs')
         cursor.execute('CREATE TABLE dirs (id int, parent_dir int, name text, size int, total_file_count int, '
-                       'file_count int, min_mtime int, min_atime int)')
+                       'file_count int, min_mtime int, min_atime int, max_mtime int, max_atime int)')
         # separate cursor for reading, reusing self.c in loop
         data = connection.execute('SELECT * FROM old_dirs')
         for row in data:
-            cursor.execute('INSERT INTO dirs VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            cursor.execute('INSERT INTO dirs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                            [mapping[row[0]], mapping[row[1]]] + list(row[2:]))
         cursor.execute('DROP TABLE old_dirs')
 
@@ -336,9 +339,9 @@ class TreeWalker:
             if self.rewrite:
                 p = self.rewrite_path(p)
             self.c.execute(
-                'SELECT l.name, l.size, l.{0}mtime, l.{0}atime '
+                'SELECT l.name, l.size, {0} '
                 'FROM {1} AS l JOIN dirs ON dirs.id = l.parent_dir '
-                'WHERE dirs.name = ?'.format(('' if files else 'min_'), ('files' if files else 'dirs')), [p])
+                'WHERE dirs.name = ?'.format(('l.mtime, l.atime' if files else 'l.min_mtime, l.max_mtime, l.min_atime, l.max_atime'), ('files' if files else 'dirs')), [p])
             return self.c.fetchall()
         finally:
             self._conn.row_factory = rf
