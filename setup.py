@@ -1,6 +1,8 @@
-import os
 import re
 from setuptools import setup
+import os
+
+os.environ['SETUPTOOLS_USE_DISTUTILS'] = 'stdlib'
 
 __name__ = 'treewalker'
 
