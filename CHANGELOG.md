@@ -4,6 +4,11 @@
 
 Pending changes for unreleased versions: none.
 
+## [0.2.1] - 2025-07-25
+
+### Fixed
+  - fix setup issues with .toml and .cfg
+
 ## [0.2.0] - 2025-07-25
 
 ### Added
