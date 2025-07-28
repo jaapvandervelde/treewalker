@@ -23,12 +23,13 @@ def get_latest_git_tag():
         return None
 
 
-def get_changelog_version():
+def get_changelog_version() -> tuple[str, bool]:
     with open('CHANGELOG.md') as f:
         text = f.read()
         xs = re.finditer('\[(.*?)]', text)
         assert next(xs).group(0), '[Unreleased]'
-        return next(xs).group(1)
+        version = next(xs).group(1)
+        return version, (f'[{version}]: /../../../tags/{version}' in text)
 
 
 def main(arg_version):
@@ -39,9 +40,16 @@ def main(arg_version):
             print("Version in code does not match stated version: {} != {}".format(__version__, arg_version))
             exit(1)
 
-        changelog_version = get_changelog_version()
+        try:
+            changelog_version, link_found = get_changelog_version()
+        except AssertionError:
+            print('Changelog expected to start with [Unreleased]')
+            exit(1)
         if __version__ != changelog_version:
             print('Code version does not match changelog: {} != {}'.format(__version__, changelog_version))
+            exit(1)
+        if not link_found:
+            print('Changelog version does not have matching link at end of file: [{}]'.format(changelog_version))
             exit(1)
 
         latest_tag = get_latest_git_tag()

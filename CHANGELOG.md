@@ -4,6 +4,11 @@
 
 Pending changes for unreleased versions: none.
 
+## [0.2.2] - 2025-07-26
+
+### Fixed
+  - fix error in calculation of max_mtime and max_atime
+
 ## [0.2.1] - 2025-07-25
 
 ### Fixed
@@ -148,6 +153,11 @@ treewalker --set_host myhostname --output existing.sqlite
   - Modified standalone walker project to become treewalker package.
 
 [Unreleased]: /../../../
+[0.2.2]: /../../../tags/0.2.2
+[0.2.1]: /../../../tags/0.2.1
+[0.2.0]: /../../../tags/0.2.0
+[0.1.10]: /../../../tags/0.1.10
+[0.1.9]: /../../../tags/0.1.9
 [0.1.8]: /../../../tags/0.1.8
 [0.1.7]: /../../../tags/0.1.7
 [0.1.6]: /../../../tags/0.1.6

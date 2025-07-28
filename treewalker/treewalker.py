@@ -106,6 +106,13 @@ class TreeWalker:
         cls.lines += 1
 
     def _do_walk(self, path, parent_dir=-1, filter_callback=None):
+        def _update_stats(_mtime, _atime):
+            nonlocal min_mtime, max_mtime, min_atime, max_atime
+            min_mtime = min(min_mtime, _mtime)
+            max_mtime = max(max_mtime, _mtime)
+            min_atime = min(min_atime, _atime)
+            max_atime = max(max_atime, _atime)
+
         start = datetime.strftime(datetime.utcnow(), DATE_FORMAT)
         self.__class__.log_freq = 100
         dir_id = self.next_dir_id
@@ -120,8 +127,10 @@ class TreeWalker:
                     # noinspection PyUnresolvedReferences
                     if entry.is_dir(follow_symlinks=False):
                         # noinspection PyUnresolvedReferences
-                        size, sub_count, mtime, atime = self._do_walk(entry.path, dir_id)
+                        size, sub_count, sub_min_mtime, sub_min_atime, sub_max_mtime, sub_max_atime = self._do_walk(entry.path, dir_id)
                         total_count += sub_count
+                        _update_stats(sub_min_mtime, sub_min_atime)
+                        _update_stats(sub_max_mtime, sub_max_atime)
                     else:
                         # noinspection PyUnresolvedReferences
                         stat = entry.stat(follow_symlinks=False)
@@ -133,11 +142,8 @@ class TreeWalker:
                         # noinspection PyUnresolvedReferences
                         self.c.execute('INSERT INTO files VALUES(?, ?, ?, ?, ?)',
                                        [dir_id, entry.name, size, mtime, atime])
+                        _update_stats(mtime, atime)
                     total_size += size
-                    min_mtime = min(min_mtime, mtime)
-                    min_atime = min(min_atime, atime)
-                    max_mtime = max(max_mtime, mtime)
-                    max_atime = max(max_atime, atime)
         except (PermissionError, FileNotFoundError, OSError) as e:
             print('Error trying to process "{}": {}'.format(path, e))
             self.c.execute('INSERT INTO no_access VALUES(?, ?, ?, 0)',
@@ -148,7 +154,7 @@ class TreeWalker:
         end = datetime.strftime(datetime.utcnow(), DATE_FORMAT)
         if parent_dir == -1:
             self.c.execute('INSERT INTO runs VALUES(?, ?, ?)', [path, start, end])
-        return total_size, total_count, min_mtime, min_atime
+        return total_size, total_count, min_mtime, min_atime, max_mtime, max_atime
 
     def walk(self, path, parent_dir=-1, filter_callback=None):
         if self.rewrite:
